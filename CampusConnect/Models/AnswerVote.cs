@@ -9,10 +9,10 @@ namespace CampusConnect.Models
 
         public int AnswerId { get; set; }
         [ForeignKey("AnswerId")]
-        public Answer Answer { get; set; }
+        public Answer Answer { get; set; } = null!;
 
-        public string ApplicationUserId { get; set; }
+        public string ApplicationUserId { get; set; } = null!;
         [ForeignKey("ApplicationUserId")]
-        public ApplicationUser ApplicationUser { get; set; }
+        public ApplicationUser ApplicationUser { get; set; } = null!;
     }
 }

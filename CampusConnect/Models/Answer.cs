@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusConnect.Models
@@ -9,21 +11,20 @@ namespace CampusConnect.Models
         public int Id { get; set; }
 
         [Required]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
 
-        public int Score { get; set; } = 0; 
+        public int Score { get; set; } = 0;
 
         public int QuestionId { get; set; }
         [ForeignKey("QuestionId")]
-        public Question Question { get; set; }
+        public Question Question { get; set; } = null!;
 
-        public string ApplicationUserId { get; set; }
+        public string ApplicationUserId { get; set; } = null!;
         [ForeignKey("ApplicationUserId")]
-        public ApplicationUser ApplicationUser { get; set; }
+        public ApplicationUser ApplicationUser { get; set; } = null!;
 
-        // Navigation property
-        public ICollection<AnswerVote> AnswerVotes { get; set; }
+        public ICollection<AnswerVote> AnswerVotes { get; set; } = new HashSet<AnswerVote>();
     }
 }
