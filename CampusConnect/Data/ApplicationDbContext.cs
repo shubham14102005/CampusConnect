@@ -24,19 +24,33 @@ namespace CampusConnect.Data
             builder.Entity<QuestionTag>()
                 .HasKey(qt => new { qt.QuestionId, qt.TagId });
 
-            // Prevents a cascade delete cycle from the User to Questions
+            // Question ↔ ApplicationUser (no cascade delete)
             builder.Entity<Question>()
                 .HasOne(q => q.ApplicationUser)
                 .WithMany(u => u.Questions)
                 .HasForeignKey(q => q.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Prevents a cascade delete cycle from the User to Answers
+            // Answer ↔ ApplicationUser (no cascade delete)
             builder.Entity<Answer>()
                 .HasOne(a => a.ApplicationUser)
                 .WithMany(u => u.Answers)
                 .HasForeignKey(a => a.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // AnswerVote ↔ ApplicationUser (no cascade delete)
+            builder.Entity<AnswerVote>()
+                .HasOne(v => v.ApplicationUser)
+                .WithMany(u => u.AnswerVotes)
+                .HasForeignKey(v => v.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // AnswerVote ↔ Answer (delete votes when answer is deleted)
+            builder.Entity<AnswerVote>()
+                .HasOne(v => v.Answer)
+                .WithMany(a => a.AnswerVotes)
+                .HasForeignKey(v => v.AnswerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

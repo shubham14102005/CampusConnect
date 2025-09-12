@@ -12,4 +12,4 @@ namespace CampusConnect.Models
 
         public ICollection<QuestionTag> QuestionTags { get; set; } = new HashSet<QuestionTag>();
     }
-}
+}       

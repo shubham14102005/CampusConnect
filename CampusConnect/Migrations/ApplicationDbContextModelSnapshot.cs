@@ -17,7 +17,7 @@ namespace CampusConnect.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -381,7 +381,7 @@ namespace CampusConnect.Migrations
                     b.HasOne("CampusConnect.Models.ApplicationUser", "ApplicationUser")
                         .WithMany("AnswerVotes")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Answer");
