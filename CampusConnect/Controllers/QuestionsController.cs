@@ -45,35 +45,37 @@ namespace CampusConnect.Controllers
             var assignedTags = _questionTagRepository.GetByQuestionId(id.Value);
             ViewBag.AssignedTags = assignedTags.Select(qt => qt.Tag);
 
-            var assignedIds = assignedTags.Select(qt => qt.TagId).ToList();
-            ViewBag.AvailableTags = _tagRepository.GetAll()
-                                                 .Where(t => !assignedIds.Contains(t.Id));
-
             return View(question);
         }
 
         // GET: Questions/Create
         public IActionResult Create()
         {
-            ViewBag.Tags = _tagRepository.GetAll();
             return View();
         }
-
 
         // POST: Questions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create([Bind("Title,Content")] Question question, string TagNames)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError("", "You must be logged in to ask a question.");
+                return View(question);
+            }
+
             if (ModelState.IsValid)
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 question.ApplicationUserId = userId;
                 question.CreatedAt = DateTime.UtcNow;
 
                 _questionRepository.Add(question);
                 _questionRepository.Save();
 
+                // Handle Tags
                 if (!string.IsNullOrWhiteSpace(TagNames))
                 {
                     var tagNames = TagNames.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -113,7 +115,6 @@ namespace CampusConnect.Controllers
 
             return View(question);
         }
-
 
         // GET: Questions/Edit/5
         public IActionResult Edit(int? id)

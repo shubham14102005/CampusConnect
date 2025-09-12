@@ -1,4 +1,5 @@
 ﻿using CampusConnect.Data;
+using CampusConnect.Models.repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,8 +28,6 @@ namespace CampusConnect.Models.repositories
         {
             return _context.Questions
                            .Include(q => q.ApplicationUser)
-                           .Include(q => q.Answers)
-                               .ThenInclude(a => a.ApplicationUser)
                            .Include(q => q.QuestionTags)
                                .ThenInclude(qt => qt.Tag)
                            .FirstOrDefault(q => q.Id == id);
