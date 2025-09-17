@@ -2,6 +2,8 @@ using CampusConnect.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace CampusConnect.Controllers
 {
@@ -71,8 +73,8 @@ namespace CampusConnect.Controllers
 
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Home"); // Redirect after successful registration
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                return RedirectToAction("Login", "Account"); // Redirect after successful registration
             }
 
             foreach (var error in result.Errors)
@@ -88,7 +90,7 @@ namespace CampusConnect.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
     }
 }

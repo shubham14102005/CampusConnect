@@ -36,6 +36,16 @@ builder.Services.AddScoped<IQuestionTagRepository, QuestionTagRepository>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+//changing cookie behaviour for login
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // cookie valid 30 min
+    options.SlidingExpiration = true; // refresh cookie if active
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+});
+
+
 var app = builder.Build();
 
 // 5️⃣ Middleware pipeline
@@ -44,6 +54,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -60,5 +73,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
+
+
 // 7️⃣ Run app
 app.Run();
+
