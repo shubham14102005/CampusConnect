@@ -1,0 +1,66 @@
+@model CampusConnect.ViewModels.CreateQuestionViewModel
+
+@{
+    ViewData["Title"] = "Ask a New Question";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <section>
+            <form asp-action="Create" method="post">
+                <h4>Share your question with the community.</h4>
+                <hr />
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Title" class="form-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Content" class="form-label"></label>
+                    <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Tags" class="form-label"></label>
+                    <input asp-for="Tags" class="form-control" />
+                    <span asp-validation-for="Tags" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Create Question</button>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back to List</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<hr class="mt-5 mb-4" />
+
+<h3>All Questions</h3>
+
+@if (Model.AllQuestions != null && Model.AllQuestions.Any())
+{
+    <ul class="list-group">
+        @foreach (var question in Model.AllQuestions)
+        {
+            <li class="list-group-item">
+                <h5>
+                    <a asp-controller="Questions" asp-action="Details" asp-route-id="@question.Id">@question.Title</a>
+                </h5>
+                <small>Asked by @(question.ApplicationUser?.UserName ?? "Unknown") on @question.CreatedAt.ToShortDateString()</small>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No questions have been asked yet. Be the first!</p>
+}

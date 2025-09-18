@@ -1,5 +1,4 @@
 ﻿using CampusConnect.Models;
-using CampusConnect.Repositories;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,37 +20,49 @@ namespace CampusConnect.Data
         {
             base.OnModelCreating(builder);
 
-            // composite primary key for the QuestionTag table
+            // Composite primary key for the QuestionTag join table
             builder.Entity<QuestionTag>()
                 .HasKey(qt => new { qt.QuestionId, qt.TagId });
 
-            // Question ↔ ApplicationUser (no cascade delete)
+            // Define the relationship from QuestionTag to Question
+            builder.Entity<QuestionTag>()
+                .HasOne(qt => qt.Question)
+                .WithMany(q => q.QuestionTags)
+                .HasForeignKey(qt => qt.QuestionId);
+
+            // Define the relationship from QuestionTag to Tag
+            builder.Entity<QuestionTag>()
+                .HasOne(qt => qt.Tag)
+                .WithMany(t => t.QuestionTags)
+                .HasForeignKey(qt => qt.TagId);
+
+            // Configure the relationship between Question and ApplicationUser
             builder.Entity<Question>()
                 .HasOne(q => q.ApplicationUser)
                 .WithMany(u => u.Questions)
                 .HasForeignKey(q => q.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // Prevents deleting a user if they have questions
 
-            // Answer ↔ ApplicationUser (no cascade delete)
+            // Configure the relationship between Answer and ApplicationUser
             builder.Entity<Answer>()
                 .HasOne(a => a.ApplicationUser)
                 .WithMany(u => u.Answers)
                 .HasForeignKey(a => a.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // AnswerVote ↔ ApplicationUser (no cascade delete)
+            // Configure the relationship between AnswerVote and ApplicationUser
             builder.Entity<AnswerVote>()
                 .HasOne(v => v.ApplicationUser)
                 .WithMany(u => u.AnswerVotes)
                 .HasForeignKey(v => v.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // AnswerVote ↔ Answer (delete votes when answer is deleted)
+            // Configure the relationship between AnswerVote and Answer
             builder.Entity<AnswerVote>()
                 .HasOne(v => v.Answer)
                 .WithMany(a => a.AnswerVotes)
                 .HasForeignKey(v => v.AnswerId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // Deletes votes if the parent answer is deleted
         }
     }
 }

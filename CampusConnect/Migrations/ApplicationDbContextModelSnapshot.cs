@@ -53,7 +53,7 @@ namespace CampusConnect.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Answers");
+                    b.ToTable("Answers", (string)null);
                 });
 
             modelBuilder.Entity("CampusConnect.Models.AnswerVote", b =>
@@ -80,7 +80,7 @@ namespace CampusConnect.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("AnswerVotes");
+                    b.ToTable("AnswerVotes", (string)null);
                 });
 
             modelBuilder.Entity("CampusConnect.Models.ApplicationUser", b =>
@@ -179,7 +179,7 @@ namespace CampusConnect.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Questions", (string)null);
                 });
 
             modelBuilder.Entity("CampusConnect.Models.QuestionTag", b =>
@@ -194,7 +194,7 @@ namespace CampusConnect.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("QuestionTags");
+                    b.ToTable("QuestionTags", (string)null);
                 });
 
             modelBuilder.Entity("CampusConnect.Models.Tag", b =>
@@ -211,7 +211,7 @@ namespace CampusConnect.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

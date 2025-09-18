@@ -1,0 +1,66 @@
+﻿@using System.Security.Claims
+@model CampusConnect.Models.Question
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div>
+    <h1>@Model.Title</h1>
+
+    @{
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
+    @if (Model.ApplicationUserId == currentUserId)
+    {
+        <div class="mb-3">
+            <a asp-controller="Questions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Question</a>
+        </div>
+    }
+
+    <p>
+        <small>Asked by @(Model.ApplicationUser?.UserName ?? "Unknown") on @Model.CreatedAt.ToShortDateString()</small>
+    </p>
+
+    <div class="my-4">
+        @Model.Content
+    </div>
+
+    <div class="mb-4">
+        @foreach (var questionTag in Model.QuestionTags)
+        {
+            <span class="badge bg-secondary me-1">@questionTag.Tag.Name</span>
+        }
+    </div>
+</div>
+
+<hr />
+
+<div class="mt-4">
+    <h3>@Model.Answers.Count() Answers</h3>
+    @foreach (var answer in Model.Answers.OrderBy(a => a.CreatedAt))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <p>@answer.Content</p>
+                <footer class="blockquote-footer">
+                    Answered by @(answer.ApplicationUser?.UserName ?? "Unknown")
+                </footer>
+            </div>
+        </div>
+    }
+</div>
+
+<hr />
+
+<div class="mt-4">
+    <h3>Your Answer</h3>
+    <form asp-controller="Answer" asp-action="Create" method="post">
+        <input type="hidden" name="questionId" value="@Model.Id" />
+        <div class="form-group mb-3">
+            <textarea name="content" class="form-control" rows="6" placeholder="Type your answer here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Post Your Answer</button>
+    </form>
+</div>

@@ -25,7 +25,7 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" &&
-                                                                              ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
                                asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
@@ -36,7 +36,7 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" &&
-                                                                                       ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
+                                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
                                asp-area="" asp-controller="Questions" asp-action="Create">Ask Question</a>
                         </li>
                                                 }
@@ -61,7 +61,7 @@
 
     <footer class="border-top footer text-muted mt-5">
         <div class="container text-center py-3">
-            &copy; 2025 - CampusConnect |
+            &copy; @DateTime.Now.Year - CampusConnect |
             <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>
     </footer>
