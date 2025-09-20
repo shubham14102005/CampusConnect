@@ -1,7 +1,6 @@
 ﻿using CampusConnect.Data;
 using CampusConnect.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,85 +15,61 @@ namespace CampusConnect.Repositories
             _context = context;
         }
 
-        // IMPROVEMENT: More efficient. Now only calls SaveChanges() once.
-        public Question CreateQuestionWithTags(Question question, string tagsString)
+        public List<Question> GetAllWithUsers(string? searchTerm = null)
         {
-            var tagNames = tagsString.Split(',')
-                                     .Select(t => t.Trim().ToLower())
-                                     .Where(t => !string.IsNullOrEmpty(t))
-                                     .Distinct();
+            var query = _context.Questions.Include(q => q.ApplicationUser).AsQueryable();
 
-            foreach (var tagName in tagNames)
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                var existingTag = _context.Tags.FirstOrDefault(t => t.Name == tagName);
-
-                if (existingTag == null)
-                {
-                    existingTag = new Tag { Name = tagName };
-                    _context.Tags.Add(existingTag); // Add new tag to the context, but don't save yet
-                }
-
-                // Associate the tag with the question
-                question.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+                query = query.Where(q =>
+                    q.Title.Contains(searchTerm) ||
+                    q.Content.Contains(searchTerm) ||
+                    q.QuestionTags.Any(qt => qt.Tag.Name.Contains(searchTerm))
+                );
             }
-
-            _context.Questions.Add(question);
-            _context.SaveChanges(); // A single save operation handles everything
-            return question;
+            return query.OrderByDescending(q => q.CreatedAt).ToList();
         }
 
-        // No changes needed, this was correct.
-        public List<Question> GetAllWithUsers()
-        {
-            return _context.Questions
-                           .Include(q => q.ApplicationUser)
-                           .OrderByDescending(q => q.CreatedAt)
-                           .ToList();
-        }
-
-        // FIX: Changed return type to Question? to handle nulls correctly.
         public Question? GetById(int id)
         {
             return _context.Questions
                 .Include(q => q.ApplicationUser)
                 .Include(q => q.Answers)
                     .ThenInclude(a => a.ApplicationUser)
+                .Include(q => q.Answers)
+                    .ThenInclude(a => a.AnswerVotes)
                 .Include(q => q.QuestionTags)
                     .ThenInclude(qt => qt.Tag)
                 .FirstOrDefault(q => q.Id == id);
         }
 
-        // MAJOR FIX: The original Update method did not handle tag changes. This one does.
+        public void CreateQuestionWithTags(Question question, string tagsString)
+        {
+            var tagNames = tagsString.Split(',').Select(t => t.Trim().ToLower()).Where(t => !string.IsNullOrEmpty(t)).Distinct();
+            foreach (var tagName in tagNames)
+            {
+                var existingTag = _context.Tags.FirstOrDefault(t => t.Name == tagName);
+                if (existingTag == null)
+                {
+                    existingTag = new Tag { Name = tagName };
+                    _context.Tags.Add(existingTag);
+                }
+                question.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+            }
+            _context.Questions.Add(question);
+            _context.SaveChanges();
+        }
+
         public void Update(Question question, string tagsString)
         {
-            var originalQuestion = _context.Questions
-                .Include(q => q.QuestionTags)
-                .ThenInclude(qt => qt.Tag)
-                .FirstOrDefault(q => q.Id == question.Id);
-
+            var originalQuestion = _context.Questions.Include(q => q.QuestionTags).ThenInclude(qt => qt.Tag).FirstOrDefault(q => q.Id == question.Id);
             if (originalQuestion == null) return;
-
-            // Update simple properties
             originalQuestion.Title = question.Title;
             originalQuestion.Content = question.Content;
-
-            // --- Tag Update Logic ---
-            var newTagNames = tagsString.Split(',')
-                .Select(t => t.Trim().ToLower())
-                .Where(t => !string.IsNullOrEmpty(t))
-                .ToHashSet();
-
-            var currentTagNames = originalQuestion.QuestionTags
-                .Select(qt => qt.Tag.Name)
-                .ToHashSet();
-
-            // Tags to remove
-            var tagsToRemove = originalQuestion.QuestionTags
-                .Where(qt => !newTagNames.Contains(qt.Tag.Name))
-                .ToList();
+            var newTagNames = tagsString.Split(',').Select(t => t.Trim().ToLower()).Where(t => !string.IsNullOrEmpty(t)).ToHashSet();
+            var currentTagNames = originalQuestion.QuestionTags.Select(qt => qt.Tag.Name).ToHashSet();
+            var tagsToRemove = originalQuestion.QuestionTags.Where(qt => !newTagNames.Contains(qt.Tag.Name)).ToList();
             _context.QuestionTags.RemoveRange(tagsToRemove);
-
-            // Tags to add
             var tagNamesToAdd = newTagNames.Where(n => !currentTagNames.Contains(n));
             foreach (var tagName in tagNamesToAdd)
             {
@@ -103,18 +78,15 @@ namespace CampusConnect.Repositories
                 {
                     existingTag = new Tag { Name = tagName };
                     _context.Tags.Add(existingTag);
-
                 }
                 originalQuestion.QuestionTags.Add(new QuestionTag { Tag = existingTag });
             }
-
             _context.SaveChanges();
         }
 
-        // IMPROVEMENT: More efficient. No need to load all related data just to delete.
         public void Delete(int id)
         {
-            var question = _context.Questions.Find(id); // Find is more efficient than GetById here.
+            var question = _context.Questions.Find(id);
             if (question != null)
             {
                 _context.Questions.Remove(question);

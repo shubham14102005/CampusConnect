@@ -1,8 +1,5 @@
 ﻿using CampusConnect.Data;
 using CampusConnect.Models;
-using CampusConnect.Repositories;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CampusConnect.Repositories
@@ -16,38 +13,31 @@ namespace CampusConnect.Repositories
             _context = context;
         }
 
-        public IEnumerable<AnswerVote> GetAll()
+        public void AddOrUpdateVote(int answerId, string userId, bool isUpvote)
         {
-            return _context.AnswerVotes
-                           .Include(v => v.ApplicationUser)
-                           .Include(v => v.Answer)
-                           .ToList();
+            var answer = _context.Answers.Find(answerId);
+            if (answer == null) return;
+
+            var existingVote = _context.AnswerVotes
+                .FirstOrDefault(v => v.AnswerId == answerId && v.ApplicationUserId == userId);
+
+            if (existingVote == null)
+            {
+                var vote = new AnswerVote { AnswerId = answerId, ApplicationUserId = userId, IsUpvote = isUpvote };
+                _context.AnswerVotes.Add(vote);
+                answer.Score += isUpvote ? 1 : -1;
+            }
+            else if (existingVote.IsUpvote != isUpvote)
+            {
+                existingVote.IsUpvote = isUpvote;
+                answer.Score += isUpvote ? 2 : -2;
+            }
+            else
+            {
+                _context.AnswerVotes.Remove(existingVote);
+                answer.Score += isUpvote ? -1 : 1;
+            }
+            _context.SaveChanges();
         }
-
-        public AnswerVote? GetById(int id)
-        {
-            return _context.AnswerVotes
-                           .Include(v => v.ApplicationUser)
-                           .Include(v => v.Answer)
-                           .FirstOrDefault(v => v.Id == id);
-        }
-
-        public IEnumerable<AnswerVote> GetByAnswerId(int answerId)
-        {
-            return _context.AnswerVotes
-                           .Include(v => v.ApplicationUser)
-                           .Where(v => v.AnswerId == answerId)
-                           .ToList();
-        }
-
-        public void Add(AnswerVote vote) => _context.AnswerVotes.Add(vote);
-
-        public void Update(AnswerVote vote) => _context.AnswerVotes.Update(vote);
-
-        public void Remove(AnswerVote vote) => _context.AnswerVotes.Remove(vote);
-
-        public bool Exists(int id) => _context.AnswerVotes.Any(v => v.Id == id);
-
-        public void Save() => _context.SaveChanges();
     }
 }

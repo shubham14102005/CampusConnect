@@ -21,18 +21,24 @@ namespace CampusConnect.Controllers
             _userManager = userManager;
         }
 
-        // GET: /Questions/Create
+        public IActionResult Index(string? searchTerm)
+        {
+            var allQuestions = _questionRepository.GetAllWithUsers(searchTerm);
+            ViewData["CurrentSearch"] = searchTerm;
+            return View(allQuestions);
+        }
+
         [Authorize]
         public IActionResult Create()
         {
             var viewModel = new CreateQuestionViewModel
             {
+                // This call is now valid because the parameter is optional
                 AllQuestions = _questionRepository.GetAllWithUsers()
             };
             return View(viewModel);
         }
 
-        // POST: /Questions/Create
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -41,98 +47,75 @@ namespace CampusConnect.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userId == null)
-                {
-                    return Challenge();
-                }
-
-                var question = new Question
-                {
-                    Title = model.Title,
-                    Content = model.Content,
-                    CreatedAt = DateTime.UtcNow,
-                    ApplicationUserId = userId
-                };
-
+                if (userId == null) return Challenge();
+                var question = new Question { Title = model.Title, Content = model.Content, CreatedAt = DateTime.UtcNow, ApplicationUserId = userId };
                 _questionRepository.CreateQuestionWithTags(question, model.Tags);
                 return RedirectToAction("Create");
             }
-
             model.AllQuestions = _questionRepository.GetAllWithUsers();
             return View(model);
         }
 
-        // GET: /Questions/Details/5
         public IActionResult Details(int id)
         {
             var question = _questionRepository.GetById(id);
-            if (question == null)
-            {
-                return NotFound();
-            }
+            if (question == null) return NotFound();
             return View(question);
         }
 
-        // GET: /Questions/Edit/5
         [Authorize]
         public IActionResult Edit(int id)
         {
             var question = _questionRepository.GetById(id);
-            if (question == null)
-            {
-                return NotFound();
-            }
-
+            if (question == null) return NotFound();
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (question.ApplicationUserId != currentUserId)
-            {
-                return Forbid();
-            }
-
+            if (question.ApplicationUserId != currentUserId) return Forbid();
             var tagsString = string.Join(", ", question.QuestionTags.Select(qt => qt.Tag.Name));
-            var viewModel = new EditQuestionViewModel
-            {
-                Id = question.Id,
-                Title = question.Title,
-                Content = question.Content,
-                Tags = tagsString
-            };
+            var viewModel = new EditQuestionViewModel { Id = question.Id, Title = question.Title, Content = question.Content, Tags = tagsString };
             return View(viewModel);
         }
 
-        // POST: /Questions/Edit/5
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, EditQuestionViewModel model)
         {
-            if (id != model.Id)
-            {
-                return BadRequest();
-            }
-
+            if (id != model.Id) return BadRequest();
             if (ModelState.IsValid)
             {
                 var originalQuestion = _questionRepository.GetById(id);
-                if (originalQuestion == null)
-                {
-                    return NotFound();
-                }
-
+                if (originalQuestion == null) return NotFound();
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (originalQuestion.ApplicationUserId != currentUserId)
-                {
-                    return Forbid();
-                }
-
+                if (originalQuestion.ApplicationUserId != currentUserId) return Forbid();
                 originalQuestion.Title = model.Title;
                 originalQuestion.Content = model.Content;
-
                 _questionRepository.Update(originalQuestion, model.Tags);
                 return RedirectToAction("Details", new { id = model.Id });
             }
-
             return View(model);
+        }
+
+        [Authorize]
+        public IActionResult Delete(int id)
+        {
+            var question = _questionRepository.GetById(id);
+            if (question == null) return NotFound();
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (question.ApplicationUserId != currentUserId) return Forbid();
+            return View(question);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var question = _questionRepository.GetById(id);
+            if (question == null) return NotFound();
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (question.ApplicationUserId != currentUserId) return Forbid();
+            _questionRepository.Delete(id);
+            return RedirectToAction("Index", "Home");
         }
     }
 }

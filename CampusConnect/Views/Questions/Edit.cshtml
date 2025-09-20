@@ -1,36 +1,42 @@
-@model CampusConnect.ViewModels.EditQuestionViewModel
-
+﻿@model CampusConnect.ViewModels.EditQuestionViewModel
 @{
     ViewData["Title"] = "Edit Question";
 }
 
-<h1>Edit Question</h1>
-<hr />
-
-<div class="row">
-    <div class="col-md-8">
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h4 class="my-0 fw-normal">✏️ Edit Question</h4>
+    </div>
+    <div class="card-body">
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="Id" />
-
             <div class="form-group mb-3">
-                <label asp-for="Title" class="form-label"></label>
+                <label asp-for="Title" class="form-label fw-bold"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
-                <label asp-for="Content" class="form-label"></label>
+                <label asp-for="Content" class="form-label fw-bold"></label>
                 <textarea asp-for="Content" class="form-control" rows="8"></textarea>
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
-                <label asp-for="Tags" class="form-label"></label>
+                <label asp-for="Tags" class="form-label fw-bold"></label>
                 <input asp-for="Tags" class="form-control" />
                 <span asp-validation-for="Tags" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle-fill"></i> Save Changes
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
             </div>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+}

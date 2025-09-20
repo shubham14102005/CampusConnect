@@ -5,9 +5,10 @@ namespace CampusConnect.Repositories
 {
     public interface IQuestionRepository
     {
-        Question CreateQuestionWithTags(Question question, string tags);
-        List<Question> GetAllWithUsers();
-        Question? GetById(int id); // ADD a '?' here to fix the warning
+        void CreateQuestionWithTags(Question question, string tags);
+        // FIX IS HERE: Add the optional search term parameter
+        List<Question> GetAllWithUsers(string? searchTerm = null);
+        Question? GetById(int id);
         void Update(Question question, string tagsString);
         void Delete(int id);
     }

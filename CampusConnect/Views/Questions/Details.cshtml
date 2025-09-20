@@ -1,66 +1,116 @@
 ﻿@using System.Security.Claims
+@using CampusConnect.Models
 @model CampusConnect.Models.Question
-
 @{
     ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<div>
-    <h1>@Model.Title</h1>
-
-    @{
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    }
-
-    @if (Model.ApplicationUserId == currentUserId)
-    {
-        <div class="mb-3">
-            <a asp-controller="Questions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Question</a>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h1 class="card-title">@Model.Title</h1>
+        <div class="card-subtitle text-muted mb-3">
+            <small>Asked by @(Model.ApplicationUser?.UserName ?? "Unknown") on @Model.CreatedAt.ToShortDateString()</small>
         </div>
-    }
 
-    <p>
-        <small>Asked by @(Model.ApplicationUser?.UserName ?? "Unknown") on @Model.CreatedAt.ToShortDateString()</small>
-    </p>
-
-    <div class="my-4">
-        @Model.Content
-    </div>
-
-    <div class="mb-4">
-        @foreach (var questionTag in Model.QuestionTags)
+        @if (Model.ApplicationUserId == currentUserId)
         {
-            <span class="badge bg-secondary me-1">@questionTag.Tag.Name</span>
+            <div class="mb-3">
+                <a asp-controller="Questions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-pencil-square"></i> Edit Question
+                </a>
+                <a asp-controller="Questions" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i> Delete Question
+                </a>
+            </div>
         }
+
+        <p class="card-text fs-5">@Model.Content</p>
+
+        <div class="mt-4">
+            @foreach (var questionTag in Model.QuestionTags)
+            {
+                <span class="badge bg-secondary me-1">#@questionTag.Tag.Name</span>
+            }
+        </div>
     </div>
 </div>
 
-<hr />
-
 <div class="mt-4">
-    <h3>@Model.Answers.Count() Answers</h3>
-    @foreach (var answer in Model.Answers.OrderBy(a => a.CreatedAt))
+    <h3 class="mb-3">
+        <i class="bi bi-chat-square-text-fill"></i> @Model.Answers.Count() Answers
+    </h3>
+    @if (Model.Answers.Any())
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <p>@answer.Content</p>
-                <footer class="blockquote-footer">
-                    Answered by @(answer.ApplicationUser?.UserName ?? "Unknown")
-                </footer>
+        @foreach (var answer in ((IEnumerable<Answer>)Model.Answers).OrderByDescending(a => a.Score))
+        {
+            // --- LOGIC FOR NEW VOTING DISPLAY ---
+            var agrees = answer.AnswerVotes.Count(v => v.IsUpvote);
+            var disagrees = answer.AnswerVotes.Count(v => !v.IsUpvote);
+            var currentUserVote = answer.AnswerVotes.FirstOrDefault(v => v.ApplicationUserId == currentUserId);
+
+            var upvoteClass = (currentUserVote != null && currentUserVote.IsUpvote) ? "btn-success" : "btn-outline-success";
+            var downvoteClass = (currentUserVote != null && !currentUserVote.IsUpvote) ? "btn-danger" : "btn-outline-danger";
+            // --- END LOGIC ---
+
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <p>@answer.Content</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center">
+                            <form asp-controller="Vote" asp-action="Submit" method="post" class="me-2">
+                                <input type="hidden" name="answerId" value="@answer.Id" />
+                                <input type="hidden" name="isUpvote" value="true" />
+                                <input type="hidden" name="questionId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm @upvoteClass">
+                                    <i class="bi bi-hand-thumbs-up"></i> Agree (@agrees)
+                                </button>
+                            </form>
+                            <form asp-controller="Vote" asp-action="Submit" method="post">
+                                <input type="hidden" name="answerId" value="@answer.Id" />
+                                <input type="hidden" name="isUpvote" value="false" />
+                                <input type="hidden" name="questionId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm @downvoteClass">
+                                    <i class="bi bi-hand-thumbs-down"></i> Disagree (@disagrees)
+                                </button>
+                            </form>
+                        </div>
+                        <footer class="blockquote-footer mb-0 text-end">
+                            Answered by @(answer.ApplicationUser?.UserName ?? "Unknown")
+                        </footer>
+                    </div>
+                </div>
+                @if (answer.ApplicationUserId == currentUserId)
+                {
+                    <div class="card-footer bg-light">
+                        <a asp-controller="Answer" asp-action="Edit" asp-route-id="@answer.Id" class="btn btn-sm btn-link text-secondary">Edit</a>
+                        <a asp-controller="Answer" asp-action="Delete" asp-route-id="@answer.Id" class="btn btn-sm btn-link text-danger">Delete</a>
+                    </div>
+                }
             </div>
-        </div>
+        }
+    }
+    else
+    {
+        <p>No answers yet. Be the first to help!</p>
     }
 </div>
 
-<hr />
+<div class="card mt-4 shadow-sm">
+    <div class="card-header"><h4 class="my-0 fw-normal">💬 Your Answer</h4></div>
+    <div class="card-body">
+        <form asp-controller="Answer" asp-action="Create" method="post">
+            <input type="hidden" name="questionId" value="@Model.Id" />
+            <div class="form-group mb-3">
+                <textarea name="content" class="form-control" rows="6" placeholder="Type your answer here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill"></i> Post Your Answer</button>
+        </form>
+    </div>
+</div>
 
 <div class="mt-4">
-    <h3>Your Answer</h3>
-    <form asp-controller="Answer" asp-action="Create" method="post">
-        <input type="hidden" name="questionId" value="@Model.Id" />
-        <div class="form-group mb-3">
-            <textarea name="content" class="form-control" rows="6" placeholder="Type your answer here..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Post Your Answer</button>
-    </form>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-house-door-fill"></i> Back to Home
+    </a>
 </div>

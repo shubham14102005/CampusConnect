@@ -1,9 +1,6 @@
 ﻿using CampusConnect.Data;
 using CampusConnect.Models;
-using CampusConnect.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CampusConnect.Repositories
 {
@@ -16,38 +13,41 @@ namespace CampusConnect.Repositories
             _context = context;
         }
 
-        public IEnumerable<Answer> GetAll()
+        public void CreateAnswer(Answer answer)
         {
-            return _context.Answers
-                           .Include(a => a.ApplicationUser)
-                           .Include(a => a.Question)
-                           .ToList();
+            _context.Answers.Add(answer);
+            _context.SaveChanges();
         }
 
         public Answer? GetById(int id)
         {
             return _context.Answers
-                           .Include(a => a.ApplicationUser)
-                           .Include(a => a.Question)
-                           .FirstOrDefault(a => a.Id == id);
+                .Include(a => a.ApplicationUser)
+                .FirstOrDefault(a => a.Id == id);
         }
 
-        public IEnumerable<Answer> GetByQuestionId(int questionId)
+        public void Update(Answer answer)
         {
-            return _context.Answers
-                           .Include(a => a.ApplicationUser)
-                           .Where(a => a.QuestionId == questionId)
-                           .ToList();
+            // 1. Find the original answer in the database
+            var originalAnswer = _context.Answers.Find(answer.Id);
+
+            if (originalAnswer != null)
+            {
+                // 2. Update only the properties that should be changed
+                originalAnswer.Content = answer.Content;
+
+                // 3. Save the changes to the original record
+                _context.SaveChanges();
+            }
         }
-
-        public void Add(Answer answer) => _context.Answers.Add(answer);
-
-        public void Update(Answer answer) => _context.Answers.Update(answer);
-
-        public void Remove(Answer answer) => _context.Answers.Remove(answer);
-
-        public bool Exists(int id) => _context.Answers.Any(a => a.Id == id);
-
-        public void Save() => _context.SaveChanges();
+        public void Delete(int id)
+        {
+            var answer = _context.Answers.Find(id);
+            if (answer != null)
+            {
+                _context.Answers.Remove(answer);
+                _context.SaveChanges();
+            }
+        }
     }
 }

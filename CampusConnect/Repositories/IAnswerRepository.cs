@@ -1,18 +1,17 @@
-﻿using System.Collections.Generic;
-using CampusConnect.Models;
-using CampusConnect.Repositories;
+﻿using CampusConnect.Models;
 
 namespace CampusConnect.Repositories
 {
     public interface IAnswerRepository
     {
-        IEnumerable<Answer> GetAll();
+        void CreateAnswer(Answer answer);
         Answer? GetById(int id);
-        IEnumerable<Answer> GetByQuestionId(int questionId);
-        void Add(Answer answer);
         void Update(Answer answer);
-        void Remove(Answer answer);
-        bool Exists(int id);
-        void Save();
+        void Delete(int id);
+    }
+
+    public interface IAnswerVoteRepository
+    {
+        void AddOrUpdateVote(int answerId, string userId, bool isUpvote);
     }
 }
