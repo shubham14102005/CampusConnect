@@ -1,4 +1,6 @@
-﻿using CampusConnect.Models;
+using CampusConnect.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CampusConnect.Repositories
 {
@@ -8,10 +10,7 @@ namespace CampusConnect.Repositories
         Answer? GetById(int id);
         void Update(Answer answer);
         void Delete(int id);
-    }
-
-    public interface IAnswerVoteRepository
-    {
-        void AddOrUpdateVote(int answerId, string userId, bool isUpvote);
+        Task<IEnumerable<Answer>> GetAnswersByQuestion(int questionId);
+        Task<IEnumerable<Answer>> GetAnswersByUser(string userId);
     }
 }

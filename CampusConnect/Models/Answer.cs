@@ -12,7 +12,8 @@ namespace CampusConnect.Models
         [Required]
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-        public int Score { get; set; } = 0; // This will now be correctly updated
+        public int UpvoteCount { get; set; } = 0;
+        public int DownvoteCount { get; set; } = 0;
         public int QuestionId { get; set; }
         [ForeignKey("QuestionId")]
         public Question Question { get; set; } = null!;

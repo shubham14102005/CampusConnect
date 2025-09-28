@@ -1,9 +1,10 @@
 using CampusConnect.Models;
+using CampusConnect.Repositories;
+using CampusConnect.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-
 
 namespace CampusConnect.Controllers
 {
@@ -11,12 +12,90 @@ namespace CampusConnect.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IQuestionRepository _questionRepository;
+        private readonly IAnswerRepository _answerRepository;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IQuestionRepository questionRepository, IAnswerRepository answerRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _questionRepository = questionRepository;
+            _answerRepository = answerRepository;
         }
+
+        public async Task<IActionResult> Profile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Challenge();
+            }
+            var questions = await _questionRepository.GetQuestionsByUser(userId);
+            var answers = await _answerRepository.GetAnswersByUser(userId);
+
+            var model = new ProfileViewModel
+            {
+                QuestionCount = questions.Count(),
+                AnswerCount = answers.Count(),
+                RecentQuestions = questions,
+                RecentAnswers = answers
+            };
+
+            return View(model);
+        }
+
+        // GET: /Account/Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditProfileViewModel
+            {
+                FullName = user.FullName
+            };
+
+            return View(model);
+        }
+
+        // POST: /Account/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.FullName = model.FullName;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Profile));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+
 
         // GET: Login page
         [HttpGet]
@@ -57,6 +136,12 @@ namespace CampusConnect.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string fullName, string email, string password)
         {
+            if (!email.EndsWith("@ddu.ac.in"))
+            {
+                ModelState.AddModelError(string.Empty, "Only DDU students can register.");
+                return View();
+            }
+
             if (!ModelState.IsValid)
             {
                 return View();
@@ -73,6 +158,7 @@ namespace CampusConnect.Controllers
 
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(user, "Student");
                 await _signInManager.SignInAsync(user, isPersistent: true);
                 return RedirectToAction("Login", "Account"); // Redirect after successful registration
             }
@@ -83,6 +169,66 @@ namespace CampusConnect.Controllers
             }
 
             return View();
+        }
+
+        // GET: /Account/RegisterFaculty
+        [HttpGet]
+        public IActionResult RegisterFaculty()
+        {
+            return View();
+        }
+
+        // POST: /Account/RegisterFaculty
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterFaculty(RegisterFacultyViewModel model)
+        {
+            if (!model.Email.EndsWith("@faculty.ddu.ac.in"))
+            {
+                ModelState.AddModelError(string.Empty, "Only DDU faculty can register.");
+                return View(model);
+            }
+
+            if (model.SecretKey != "faculty @123")
+            {
+                ModelState.AddModelError(string.Empty, "Invalid secret key.");
+                return View(model);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FullName = model.FullName,
+                FunctioningTitle = model.FunctioningTitle
+            };
+
+            if (model.Password == null)
+            {
+                ModelState.AddModelError(string.Empty, "Password is required.");
+                return View(model);
+            }
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Faculty");
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                return RedirectToAction("Login", "Account");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
         }
 
         // POST: Logout

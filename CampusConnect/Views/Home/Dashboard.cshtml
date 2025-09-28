@@ -113,17 +113,22 @@
             </div>
 
             <div class="feed-card">
-                <h5>❓ Trending Question</h5>
+                <h5><i class="bi bi-graph-up"></i> Trending Questions</h5>
                 @foreach(var question in Model.TrendingQuestions)
-{
-    <div class="feed-card">
-        <h5>❓ @question.Title</h5>
-        <small>Asked by @question.Content · @question.CreatedAt</small>
-        <p>@question.Content</p>
-        
-    </div>
-}
-                <a href="/Questions/Details/1" class="btn btn-outline-primary btn-sm">Answer</a>
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">@question.Title</h5>
+                            <p class="card-text"><small class="text-muted">Asked by @question.ApplicationUser.FullName on @question.CreatedAt.ToShortDateString()</small></p>
+                            <p class="card-text">@question.Content</p>
+                            <a href="/Questions/Details/@question.Id" class="btn btn-primary">Answer</a>
+                            <a href="#" class="btn btn-secondary">Follow</a>
+                        </div>
+                        <div class="card-footer text-muted">
+                            @question.Answers.Count Answers
+                        </div>
+                    </div>
+                }
             </div>
         </div>
 

@@ -11,5 +11,6 @@ namespace CampusConnect.Repositories
         Question? GetById(int id);
         void Update(Question question, string tagsString);
         void Delete(int id);
+    Task<IEnumerable<Question>> GetQuestionsByUser(string userId);
     }
 }

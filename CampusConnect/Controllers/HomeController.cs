@@ -30,6 +30,8 @@ namespace CampusConnect.Controllers
 
                 // Trending questions (top 5 latest questions)
                 TrendingQuestions = _context.Questions
+                                            .Include(q => q.ApplicationUser)
+                                            .Include(q => q.Answers)
                                             .OrderByDescending(q => q.CreatedAt) // adjust field as needed
                                             .Take(5)
                                             .ToList()

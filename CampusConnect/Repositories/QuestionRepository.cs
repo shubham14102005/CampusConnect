@@ -30,18 +30,18 @@ namespace CampusConnect.Repositories
             return query.OrderByDescending(q => q.CreatedAt).ToList();
         }
 
-        public Question? GetById(int id)
-        {
-            return _context.Questions
-                .Include(q => q.ApplicationUser)
-                .Include(q => q.Answers)
-                    .ThenInclude(a => a.ApplicationUser)
-                .Include(q => q.Answers)
-                    .ThenInclude(a => a.AnswerVotes)
-                .Include(q => q.QuestionTags)
-                    .ThenInclude(qt => qt.Tag)
-                .FirstOrDefault(q => q.Id == id);
-        }
+         public Question? GetById(int id)
+  {
+      return _context.Questions
+          .Include(q => q.ApplicationUser)
+          .Include(q => q.Answers)
+              .ThenInclude(a => a.ApplicationUser)
+          .Include(q => q.Answers)
+              .ThenInclude(a => a.AnswerVotes)
+          .Include(q => q.QuestionTags)
+              .ThenInclude(qt => qt.Tag)
+          .FirstOrDefault(q => q.Id == id);
+  }
 
         public void CreateQuestionWithTags(Question question, string tagsString)
         {
@@ -92,6 +92,15 @@ namespace CampusConnect.Repositories
                 _context.Questions.Remove(question);
                 _context.SaveChanges();
             }
+        }
+        public async Task<IEnumerable<Question>> GetAll() 
+        {
+            return await _context.Questions.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Question>> GetQuestionsByUser(string userId)
+        {
+            return await _context.Questions.Where(q => q.ApplicationUserId == userId).OrderByDescending(q => q.CreatedAt).Take(5).ToListAsync();
         }
     }
 }

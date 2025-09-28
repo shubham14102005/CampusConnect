@@ -49,5 +49,14 @@ namespace CampusConnect.Repositories
                 _context.SaveChanges();
             }
         }
+        public async Task<IEnumerable<Answer>> GetAnswersByQuestion(int questionId)
+        {
+            return await _context.Answers.Where(a => a.QuestionId == questionId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Answer>> GetAnswersByUser(string userId)
+        {
+            return await _context.Answers.Where(a => a.ApplicationUserId == userId).OrderByDescending(a => a.CreatedAt).Take(5).ToListAsync();
+        }
     }
 }

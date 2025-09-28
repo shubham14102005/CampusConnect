@@ -56,6 +56,7 @@
 <div class="d-flex justify-content-center align-items-center" style="height:100vh; position: relative; z-index:1;">
     <div class="login-card position-relative">
         <h2 class="text-center mb-4">CampusConnect</h2>
+        <div asp-validation-summary="All" class="text-danger"></div>
         <form method="post" action="/Account/Login" class="position-relative">
             <div class="mb-3 position-relative">
                 <label for="email" class="form-label">Email</label>
@@ -71,12 +72,13 @@
             <button type="submit" class="btn btn-gradient w-100 rounded-pill">Login</button>
         </form>
         <div class="text-center mt-3">
+                        <p>
+                          <a asp-action="RegisterFaculty">Register as Faculty</a>
+                      </p>
             <span>Don't have an account? </span>
             <a href="/Account/Register" class="text-white fw-bold text-decoration-underline">Register</a>
 
-            <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
-    <button type="submit" class="btn btn-link text-white">Logout</button>
-</form>
+            
         </div>
     </div>
 </div>

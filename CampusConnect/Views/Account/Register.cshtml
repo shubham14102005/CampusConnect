@@ -56,6 +56,7 @@
 <div class="d-flex justify-content-center align-items-center" style="height:100vh; position: relative; z-index:1;">
     <div class="register-card position-relative">
         <h2 class="text-center mb-4">Register</h2>
+        <div asp-validation-summary="All" class="text-danger"></div>
         <form method="post" action="/Account/Register" class="position-relative">
             <div class="mb-3">
                 <label for="name" class="form-label">Full Name</label>

@@ -42,15 +42,15 @@
     </h3>
     @if (Model.Answers.Any())
     {
-        @foreach (var answer in ((IEnumerable<Answer>)Model.Answers).OrderByDescending(a => a.Score))
+        @foreach (var answer in ((IEnumerable<Answer>)Model.Answers).OrderByDescending(a => a.UpvoteCount))
         {
             // --- LOGIC FOR NEW VOTING DISPLAY ---
-            var agrees = answer.AnswerVotes.Count(v => v.IsUpvote);
-            var disagrees = answer.AnswerVotes.Count(v => !v.IsUpvote);
+            var agrees = answer.AnswerVotes.Count(v => v.IsUpVote);
+            var disagrees = answer.AnswerVotes.Count(v => !v.IsUpVote);
             var currentUserVote = answer.AnswerVotes.FirstOrDefault(v => v.ApplicationUserId == currentUserId);
 
-            var upvoteClass = (currentUserVote != null && currentUserVote.IsUpvote) ? "btn-success" : "btn-outline-success";
-            var downvoteClass = (currentUserVote != null && !currentUserVote.IsUpvote) ? "btn-danger" : "btn-outline-danger";
+            var upvoteClass = (currentUserVote != null && currentUserVote.IsUpVote) ? "btn-success" : "btn-outline-success";
+            var downvoteClass = (currentUserVote != null && !currentUserVote.IsUpVote) ? "btn-danger" : "btn-outline-danger";
             // --- END LOGIC ---
 
             <div class="card mb-3 shadow-sm">
@@ -62,16 +62,16 @@
                                 <input type="hidden" name="answerId" value="@answer.Id" />
                                 <input type="hidden" name="isUpvote" value="true" />
                                 <input type="hidden" name="questionId" value="@Model.Id" />
-                                <button type="submit" class="btn btn-sm @upvoteClass">
-                                    <i class="bi bi-hand-thumbs-up"></i> Agree (@agrees)
+                                <button type="submit" class="btn btn-sm @upvoteClass upvote-btn">
+                                    <i class="bi bi-hand-thumbs-up"></i> Agree (<span class="upvote-count">@agrees</span>)
                                 </button>
                             </form>
-                            <form asp-controller="Vote" asp-action="Submit" method="post">
+                            <form asp-controller="Vote" asp-action="Submit" method="post" class="vote-form">
                                 <input type="hidden" name="answerId" value="@answer.Id" />
                                 <input type="hidden" name="isUpvote" value="false" />
                                 <input type="hidden" name="questionId" value="@Model.Id" />
-                                <button type="submit" class="btn btn-sm @downvoteClass">
-                                    <i class="bi bi-hand-thumbs-down"></i> Disagree (@disagrees)
+                                <button type="submit" class="btn btn-sm @downvoteClass downvote-btn">
+                                    <i class="bi bi-hand-thumbs-down"></i> Disagree (<span class="downvote-count">@disagrees</span>)
                                 </button>
                             </form>
                         </div>
@@ -114,3 +114,39 @@
         <i class="bi bi-house-door-fill"></i> Back to Home
     </a>
 </div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.vote-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (data) {
+                        var answerId = form.find('input[name="answerId"]').val();
+                var answerContainer = form.closest('.card.mb-3.shadow-sm'); // Find the parent answer card
+                var upvoteButton = answerContainer.find('.upvote-btn');
+                var downvoteButton = answerContainer.find('.downvote-btn');
+
+
+                upvoteButton.find('.upvote-count').text(data.upvotes);
+                downvoteButton.find('.downvote-count').text(data.downvotes);
+
+                // Update button classes
+                var isUpvote = form.find('input[name="isUpvote"]').val() === 'true';
+                if (isUpvote) {
+                    upvoteButton.removeClass('btn-outline-success').addClass('btn-success');
+                    downvoteButton.removeClass('btn-danger').addClass('btn-outline-danger');
+                } else {
+                    downvoteButton.removeClass('btn-outline-danger').addClass('btn-danger');
+                    upvoteButton.removeClass('btn-success').addClass('btn-outline-success');
+                }
+                    }
+                });
+            });
+        });
+    </script>
+}

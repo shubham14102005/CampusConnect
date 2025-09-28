@@ -1,0 +1,86 @@
+@model CampusConnect.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="https://st3.depositphotos.com/6672868/13701/v/450/depositphotos_137014128-stock-illustration-user-profile-icon.jpg" alt="User profile picture" class="img-fluid rounded-circle mb-3" width="150">
+                    <h3>@User.Identity.Name</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">User Stats</h5>
+                    <a asp-action="Edit" class="btn btn-primary btn-sm float-right">Edit Profile</a>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light p-3 text-center">
+                                <h4>@Model.QuestionCount</h4>
+                                <p class="text-muted">Questions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light p-3 text-center">
+                                <h4>@Model.AnswerCount</h4>
+                                <p class="text-muted">Answers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Questions</h5>
+                    <hr>
+                    @if (Model.RecentQuestions != null && Model.RecentQuestions.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var question in Model.RecentQuestions)
+                            {
+                                <li class="list-group-item"><a href="/Questions/Details/@question.Id">@question.Title</a></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No recent questions.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Answers</h5>
+                    <hr>
+                    @if (Model.RecentAnswers != null && Model.RecentAnswers.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var answer in Model.RecentAnswers)
+                            {
+                                <li class="list-group-item"><a href="/Questions/Details/@answer.QuestionId">@answer.Content</a></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No recent answers.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

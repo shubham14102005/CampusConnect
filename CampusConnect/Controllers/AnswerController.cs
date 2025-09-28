@@ -30,6 +30,7 @@
                     return RedirectToAction("Details", "Questions", new { id = questionId });
                 }
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Challenge();
                 var answer = new Answer { Content = content, CreatedAt = DateTime.UtcNow, QuestionId = questionId, ApplicationUserId = userId };
                 _answerRepository.CreateAnswer(answer);
                 return RedirectToAction("Details", "Questions", new { id = questionId });

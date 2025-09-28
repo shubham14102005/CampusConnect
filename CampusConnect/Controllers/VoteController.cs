@@ -8,22 +8,34 @@ namespace CampusConnect.Controllers
     [Authorize]
     public class VoteController : Controller
     {
-        private readonly IAnswerVoteRepository _voteRepository;
+        private readonly IAnswerVoteRepo _voteRepository;
+        private readonly IAnswerRepository _answerRepository;
 
-        public VoteController(IAnswerVoteRepository voteRepository)
+        public VoteController(IAnswerVoteRepo voteRepository, IAnswerRepository answerRepository)
         {
             _voteRepository = voteRepository;
+            _answerRepository = answerRepository;
         }
 
         [HttpPost]
-        public IActionResult Submit(int answerId, bool isUpvote, int questionId)
+        public async Task<IActionResult> Submit(int answerId, bool isUpvote)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != null)
+            if (userId == null) 
             {
-                _voteRepository.AddOrUpdateVote(answerId, userId, isUpvote);
+                return Unauthorized();
             }
-            return RedirectToAction("Details", "Questions", new { id = questionId });
+
+            await _voteRepository.AddOrUpdateVote(answerId, userId, isUpvote);
+
+            // Assuming you have a method to get the updated counts
+            var answer = _answerRepository.GetById(answerId); // You need to inject IAnswerRepository
+            if (answer == null) 
+            {
+                return NotFound();
+            }
+
+            return Json(new { upvotes = answer.UpvoteCount, downvotes = answer.DownvoteCount });
         }
     }
 }

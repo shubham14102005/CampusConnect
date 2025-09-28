@@ -28,9 +28,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // 3️⃣ Add repositories
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
-builder.Services.AddScoped<IAnswerVoteRepository, AnswerVoteRepository>();
+builder.Services.AddScoped<IAnswerVoteRepo, AnswerVoteRepo>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IQuestionTagRepository, QuestionTagRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // 4️⃣ Add MVC
 builder.Services.AddControllersWithViews();
@@ -73,7 +74,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
-
+// Seed the database
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await DbSeeder.SeedRolesAndAdminAsync(roleManager);
+}
 
 // 7️⃣ Run app
 app.Run();
