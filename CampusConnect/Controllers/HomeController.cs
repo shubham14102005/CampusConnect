@@ -1,6 +1,10 @@
-using CampusConnect.Data;
 using Microsoft.AspNetCore.Mvc;
+using CampusConnect.Data;
+using CampusConnect.Models;
+using CampusConnect.ViewModels; 
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+
 
 namespace CampusConnect.Controllers
 {
@@ -13,18 +17,28 @@ namespace CampusConnect.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public IActionResult Index()
         {
-            var questions = await _context.Questions
-                                          .Include(q => q.ApplicationUser)
-                                          .OrderByDescending(q => q.CreatedAt)
-                                          .ToListAsync();
-            return View(questions);
-        }
+            var model = new DashboardViewModel
+            {
+                // Suggested users (top 5 by FullName as example)
+                SuggestedUsers = _context.Users
+                                         .OrderBy(u => u.FullName)
+                                         .Take(5)
+                                         .ToList(),
 
-        public IActionResult Privacy()
-        {
-            return View();
+                // Trending questions (top 5 latest questions)
+                TrendingQuestions = _context.Questions
+                                            .Include(q => q.ApplicationUser)
+                                            .Include(q => q.Answers)
+                                            .OrderByDescending(q => q.CreatedAt) // adjust field as needed
+                                            .Take(5)
+                                            .ToList()
+            };
+
+            // Return the Dashboard view in Home folder
+            return View("Dashboard", model);
         }
     }
 }

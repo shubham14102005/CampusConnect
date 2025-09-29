@@ -1,69 +1,152 @@
-﻿@model CampusConnect.Models.Question
+﻿@using System.Security.Claims
 @using CampusConnect.Models
+@model CampusConnect.Models.Question
 @{
-    ViewData["Title"] = "Question Details";
-    var assignedTags = ViewBag.AssignedTags as IEnumerable<Tag>;
-    var availableTags = ViewBag.AvailableTags as IEnumerable<Tag>;
+    ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<div class="card shadow-sm mb-3">
+<div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h3 class="card-title">@Model.Title</h3>
-        <p class="card-text">@Model.Content</p>
-        <p class="text-muted">
-            Asked by <strong>@Model.ApplicationUser.FullName</strong>
-            on @Model.CreatedAt.ToString("g")
-        </p>
+        <h1 class="card-title">@Model.Title</h1>
+        <div class="card-subtitle text-muted mb-3">
+            <small>Asked by @(Model.ApplicationUser?.UserName ?? "Unknown") on @Model.CreatedAt.ToShortDateString()</small>
+        </div>
+
+        @if (Model.ApplicationUserId == currentUserId)
+        {
+            <div class="mb-3">
+                <a asp-controller="Questions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-pencil-square"></i> Edit Question
+                </a>
+                <a asp-controller="Questions" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i> Delete Question
+                </a>
+            </div>
+        }
+
+        <p class="card-text fs-5">@Model.Content</p>
+
+        <div class="mt-4">
+            @foreach (var questionTag in Model.QuestionTags)
+            {
+                <span class="badge bg-secondary me-1">#@questionTag.Tag.Name</span>
+            }
+        </div>
     </div>
 </div>
 
-<hr />
-
-<h5>Tags:</h5>
-@if (assignedTags != null && assignedTags.Any())
-{
-    foreach (var tag in assignedTags)
+<div class="mt-4">
+    <h3 class="mb-3">
+        <i class="bi bi-chat-square-text-fill"></i> @Model.Answers.Count() Answers
+    </h3>
+    @if (Model.Answers.Any())
     {
-        <span class="badge bg-primary me-1">@tag.Name</span>
-        @if (User.Identity.IsAuthenticated && Model.ApplicationUserId == User.FindFirst("sub")?.Value)
+        @foreach (var answer in ((IEnumerable<Answer>)Model.Answers).OrderByDescending(a => a.UpvoteCount))
         {
-            <form asp-controller="Tags" asp-action="Remove" method="post" class="d-inline">
-                <input type="hidden" name="questionId" value="@Model.Id" />
-                <input type="hidden" name="tagId" value="@tag.Id" />
-                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">x</button>
-            </form>
+            // --- LOGIC FOR NEW VOTING DISPLAY ---
+            var agrees = answer.AnswerVotes.Count(v => v.IsUpVote);
+            var disagrees = answer.AnswerVotes.Count(v => !v.IsUpVote);
+            var currentUserVote = answer.AnswerVotes.FirstOrDefault(v => v.ApplicationUserId == currentUserId);
+
+            var upvoteClass = (currentUserVote != null && currentUserVote.IsUpVote) ? "btn-success" : "btn-outline-success";
+            var downvoteClass = (currentUserVote != null && !currentUserVote.IsUpVote) ? "btn-danger" : "btn-outline-danger";
+            // --- END LOGIC ---
+
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <p>@answer.Content</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center">
+                            <form asp-controller="Vote" asp-action="Submit" method="post" class="me-2">
+                                <input type="hidden" name="answerId" value="@answer.Id" />
+                                <input type="hidden" name="isUpvote" value="true" />
+                                <input type="hidden" name="questionId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm @upvoteClass upvote-btn">
+                                    <i class="bi bi-hand-thumbs-up"></i> Agree (<span class="upvote-count">@agrees</span>)
+                                </button>
+                            </form>
+                            <form asp-controller="Vote" asp-action="Submit" method="post" class="vote-form">
+                                <input type="hidden" name="answerId" value="@answer.Id" />
+                                <input type="hidden" name="isUpvote" value="false" />
+                                <input type="hidden" name="questionId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm @downvoteClass downvote-btn">
+                                    <i class="bi bi-hand-thumbs-down"></i> Disagree (<span class="downvote-count">@disagrees</span>)
+                                </button>
+                            </form>
+                        </div>
+                        <footer class="blockquote-footer mb-0 text-end">
+                            Answered by @(answer.ApplicationUser?.UserName ?? "Unknown")
+                        </footer>
+                    </div>
+                </div>
+                @if (answer.ApplicationUserId == currentUserId)
+                {
+                    <div class="card-footer bg-light">
+                        <a asp-controller="Answer" asp-action="Edit" asp-route-id="@answer.Id" class="btn btn-sm btn-link text-secondary">Edit</a>
+                        <a asp-controller="Answer" asp-action="Delete" asp-route-id="@answer.Id" class="btn btn-sm btn-link text-danger">Delete</a>
+                    </div>
+                }
+            </div>
         }
     }
-}
-else
-{
-    <p class="text-muted">No tags assigned.</p>
-}
+    else
+    {
+        <p>No answers yet. Be the first to help!</p>
+    }
+</div>
 
-@if (User.Identity.IsAuthenticated && Model.ApplicationUserId == User.FindFirst("sub")?.Value)
-{
-    <div class="mt-3">
-        <h6>Add a Tag:</h6>
-        <form asp-controller="Tags" asp-action="Assign" method="post" class="d-flex">
+<div class="card mt-4 shadow-sm">
+    <div class="card-header"><h4 class="my-0 fw-normal">💬 Your Answer</h4></div>
+    <div class="card-body">
+        <form asp-controller="Answer" asp-action="Create" method="post">
             <input type="hidden" name="questionId" value="@Model.Id" />
-            <select name="tagId" class="form-select me-2" style="max-width:200px;">
-                @foreach (var tag in availableTags ?? Enumerable.Empty<Tag>())
-                {
-                    <option value="@tag.Id">@tag.Name</option>
-                }
-            </select>
-            <button type="submit" class="btn btn-sm btn-success">Assign</button>
+            <div class="form-group mb-3">
+                <textarea name="content" class="form-control" rows="6" placeholder="Type your answer here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill"></i> Post Your Answer</button>
         </form>
     </div>
-}
+</div>
 
-<hr />
+<div class="mt-4">
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-house-door-fill"></i> Back to Home
+    </a>
+</div>
 
-@if (User.Identity.IsAuthenticated && Model.ApplicationUserId == User.FindFirst("sub")?.Value)
-{
-    <div class="mt-3">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">Edit</a>
-        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
-    </div>
+@section Scripts {
+    <script>
+        $(function () {
+            $('.vote-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (data) {
+                        var answerId = form.find('input[name="answerId"]').val();
+                var answerContainer = form.closest('.card.mb-3.shadow-sm'); // Find the parent answer card
+                var upvoteButton = answerContainer.find('.upvote-btn');
+                var downvoteButton = answerContainer.find('.downvote-btn');
+
+
+                upvoteButton.find('.upvote-count').text(data.upvotes);
+                downvoteButton.find('.downvote-count').text(data.downvotes);
+
+                // Update button classes
+                var isUpvote = form.find('input[name="isUpvote"]').val() === 'true';
+                if (isUpvote) {
+                    upvoteButton.removeClass('btn-outline-success').addClass('btn-success');
+                    downvoteButton.removeClass('btn-danger').addClass('btn-outline-danger');
+                } else {
+                    downvoteButton.removeClass('btn-outline-danger').addClass('btn-danger');
+                    upvoteButton.removeClass('btn-success').addClass('btn-outline-success');
+                }
+                    }
+                });
+            });
+        });
+    </script>
 }
-<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

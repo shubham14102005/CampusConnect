@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusConnect.Models
 {
     public class AnswerVote
     {
+        [Key]
         public int Id { get; set; }
-        public int Value { get; set; } // +1 for like, -1 for dislike
+
+        public bool IsUpVote { get; set; }
 
         public int AnswerId { get; set; }
         [ForeignKey("AnswerId")]
