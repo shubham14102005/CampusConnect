@@ -1,11 +1,11 @@
-
 using CampusConnect.Models;
 using System.Collections.Generic;
 
 namespace CampusConnect.ViewModels
 {
-    public class ProfileViewModel
+    public class UserProfileViewModel
     {
+        public ApplicationUser User { get; set; }
         public int QuestionCount { get; set; }
         public int AnswerCount { get; set; }
         public IEnumerable<Question>? RecentQuestions { get; set; }

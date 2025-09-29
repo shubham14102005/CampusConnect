@@ -10,21 +10,21 @@ using System.Security.Claims;
 
 namespace CampusConnect.Controllers
 {
-    public class QuestionsController : Controller
+    public class QuestionsController : BaseController
     {
         private readonly IQuestionRepository _questionRepository;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public QuestionsController(IQuestionRepository questionRepository, UserManager<ApplicationUser> userManager)
+        public QuestionsController(IQuestionRepository questionRepository, UserManager<ApplicationUser> userManager) : base(userManager)
         {
             _questionRepository = questionRepository;
-            _userManager = userManager;
         }
 
-        public IActionResult Index(string? searchTerm)
+        public IActionResult Index(string? searchTerm, string? tag, string? status)
         {
-            var allQuestions = _questionRepository.GetAllWithUsers(searchTerm);
+            var allQuestions = _questionRepository.GetAllWithUsers(searchTerm, tag, status);
             ViewData["CurrentSearch"] = searchTerm;
+            ViewData["CurrentTag"] = tag;
+            ViewData["CurrentStatus"] = status;
             return View(allQuestions);
         }
 
@@ -42,14 +42,17 @@ namespace CampusConnect.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CreateQuestionViewModel model)
+        public async Task<IActionResult> Create(CreateQuestionViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (userId == null) return Challenge();
-                var question = new Question { Title = model.Title, Content = model.Content, CreatedAt = DateTime.UtcNow, ApplicationUserId = userId };
+                var question = new Question { Title = model.Title, CreatedAt = DateTime.UtcNow, ApplicationUserId = userId };
                 _questionRepository.CreateQuestionWithTags(question, model.Tags);
+
+
+
                 return RedirectToAction("Create");
             }
             model.AllQuestions = _questionRepository.GetAllWithUsers();
@@ -71,7 +74,7 @@ namespace CampusConnect.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (question.ApplicationUserId != currentUserId) return Forbid();
             var tagsString = string.Join(", ", question.QuestionTags.Select(qt => qt.Tag.Name));
-            var viewModel = new EditQuestionViewModel { Id = question.Id, Title = question.Title, Content = question.Content, Tags = tagsString };
+            var viewModel = new EditQuestionViewModel { Id = question.Id, Title = question.Title, Tags = tagsString };
             return View(viewModel);
         }
 
@@ -88,7 +91,6 @@ namespace CampusConnect.Controllers
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (originalQuestion.ApplicationUserId != currentUserId) return Forbid();
                 originalQuestion.Title = model.Title;
-                originalQuestion.Content = model.Content;
                 _questionRepository.Update(originalQuestion, model.Tags);
                 return RedirectToAction("Details", new { id = model.Id });
             }

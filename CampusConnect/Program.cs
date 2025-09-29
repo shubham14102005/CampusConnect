@@ -1,6 +1,7 @@
 using CampusConnect.Data;
 using CampusConnect.Models;
 using CampusConnect.Repositories;
+using CampusConnect.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,9 +34,12 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IQuestionTagRepository, QuestionTagRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+
+
 // 4️⃣ Add MVC
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 //changing cookie behaviour for login
 builder.Services.ConfigureApplicationCookie(options =>
@@ -45,6 +49,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
 });
+
+
 
 
 var app = builder.Build();
@@ -69,6 +75,7 @@ app.UseAuthorization();
 
 // 6️⃣ Routes
 app.MapRazorPages();
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapControllerRoute(
     name: "default",
@@ -79,6 +86,11 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await DbSeeder.SeedRolesAndAdminAsync(roleManager);
+
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+
 }
 
 // 7️⃣ Run app

@@ -15,18 +15,34 @@ namespace CampusConnect.Repositories
             _context = context;
         }
 
-        public List<Question> GetAllWithUsers(string? searchTerm = null)
+        public List<Question> GetAllWithUsers(string? searchTerm = null, string? tag = null, string? status = null)
         {
             var query = _context.Questions.Include(q => q.ApplicationUser).AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(q =>
-                    q.Title.Contains(searchTerm) ||
-                    q.Content.Contains(searchTerm) ||
-                    q.QuestionTags.Any(qt => qt.Tag.Name.Contains(searchTerm))
+                    q.Title.Contains(searchTerm)
                 );
             }
+
+            if (!string.IsNullOrEmpty(tag))
+            {
+                query = query.Where(q => q.QuestionTags.Any(qt => qt.Tag.Name.Contains(tag)));
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "answered")
+                {
+                    query = query.Where(q => q.HasAcceptedAnswer);
+                }
+                else if (status == "unanswered")
+                {
+                    query = query.Where(q => !q.HasAcceptedAnswer);
+                }
+            }
+
             return query.OrderByDescending(q => q.CreatedAt).ToList();
         }
 
@@ -65,7 +81,6 @@ namespace CampusConnect.Repositories
             var originalQuestion = _context.Questions.Include(q => q.QuestionTags).ThenInclude(qt => qt.Tag).FirstOrDefault(q => q.Id == question.Id);
             if (originalQuestion == null) return;
             originalQuestion.Title = question.Title;
-            originalQuestion.Content = question.Content;
             var newTagNames = tagsString.Split(',').Select(t => t.Trim().ToLower()).Where(t => !string.IsNullOrEmpty(t)).ToHashSet();
             var currentTagNames = originalQuestion.QuestionTags.Select(qt => qt.Tag.Name).ToHashSet();
             var tagsToRemove = originalQuestion.QuestionTags.Where(qt => !newTagNames.Contains(qt.Tag.Name)).ToList();
@@ -101,6 +116,12 @@ namespace CampusConnect.Repositories
         public async Task<IEnumerable<Question>> GetQuestionsByUser(string userId)
         {
             return await _context.Questions.Where(q => q.ApplicationUserId == userId).OrderByDescending(q => q.CreatedAt).Take(5).ToListAsync();
+        }
+
+        public async Task CreateBulk(List<Question> questions)
+        {
+            await _context.Questions.AddRangeAsync(questions);
+            await _context.SaveChangesAsync();
         }
     }
 }

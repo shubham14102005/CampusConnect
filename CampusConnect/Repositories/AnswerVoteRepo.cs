@@ -60,5 +60,12 @@ namespace CampusConnect.Repositories
             }
             await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteVotesByAnswer(int answerId)
+        {
+            var votes = await _context.AnswerVotes.Where(v => v.AnswerId == answerId).ToListAsync();
+            _context.AnswerVotes.RemoveRange(votes);
+            await _context.SaveChangesAsync();
+        }
     }
 }

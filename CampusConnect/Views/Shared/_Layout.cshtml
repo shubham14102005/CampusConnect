@@ -6,57 +6,131 @@
     <title>@ViewData["Title"] - CampusConnect</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CampusConnect.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f9f9f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        /* 🔹 Top Navbar */
+        .navbar-custom {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #d9534f;
+        }
+        .nav-link {
+            color: #333 !important;
+            margin-right: 20px;
+        }
+        .nav-link:hover {
+            color: #d9534f !important;
+        }
+
+        /* 🔹 Sidebar */
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            height: 100vh;
+            padding: 20px 10px;
+            position: sticky;
+            top: 0;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            color: #343a40;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .sidebar a:hover {
+            background: #e9ecef;
+            color: #d9534f;
+        }
+
+        /* 🔹 Feed Cards */
+        .feed-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .feed-card h5 {
+            font-weight: bold;
+        }
+        .feed-card small {
+            color: #666;
+        }
+
+        .question-card .card-title a {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .question-card .card-footer {
+            background: none;
+            border-top: none;
+            padding-left: 0;
+            padding-bottom: 0;
+        }
+
+        /* 🔹 Right panel */
+        .right-panel {
+            background: white;
+            border-left: 1px solid #ddd;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">CampusConnect</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    <nav class="navbar navbar-expand-lg navbar-custom px-3">
+        <a class="navbar-brand" href="#">CampusConnect</a>
+        @if (ViewData["CurrentUser"] is ApplicationUser currentUser && currentUser != null)
+        {
+            <span class="navbar-text ms-3">
+                Welcome, @currentUser.FullName 👋
+            </span>
+        }
+        else
+        {
+            <span class="navbar-text ms-3">User not found!</span>
+        }
+        <div class="ms-auto d-flex">
+            <form method="post" action="/Account/Logout">
+                <button type="submit" class="btn btn-danger rounded-pill">Logout</button>
+            </form>
+        </div>
+    </nav>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" &&
-                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
-                               asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
-                               asp-area="" asp-controller="Questions" asp-action="Index">Questions</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" &&
-                                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
-                               asp-area="" asp-controller="Questions" asp-action="Create">Ask Question</a>
-                        </li>
-                                                }
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Privacy" ? "active" : "")"
-                               asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
-                        <partial name="_LoginPartial" />
-                    </ul>
+    <div class="container-fluid">
+        <div class="row">
+            @if (ViewData["ShowSidebar"] as bool? ?? true)
+            {
+                <div class="col-md-2 sidebar">
+                    <a href="/Home/Index">🏠 Home</a>
+                    <a href="/Questions/Index">📚 Questions</a>
+                    <a href="/Users/Index">👥 Users</a>
+                    <a href="/Leaderboard/Index">🏆 Leaderboard</a>
+                    <a href="/Announcements/Index">📰 Announcements</a>
+                    <a href="/Account/Profile">⚙️ Profile</a>
                 </div>
+            }
+            <div class="col-md-10">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
             </div>
-        </nav>
-    </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted mt-5">
@@ -68,6 +142,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

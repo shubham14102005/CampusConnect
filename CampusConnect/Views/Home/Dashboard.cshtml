@@ -4,147 +4,133 @@
 @model CampusConnect.ViewModels.DashboardViewModel
 
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<style>
-    body {
-        background: #f9f9f9;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    /* 🔹 Top Navbar */
-    .navbar-custom {
-        background: white;
-        border-bottom: 1px solid #ddd;
-    }
-    .navbar-brand {
-        font-weight: bold;
-        color: #b92b27;
-    }
-    .nav-link {
-        color: #555 !important;
-        margin-right: 20px;
-    }
-    .nav-link:hover {
-        color: #b92b27 !important;
-    }
 
-    /* 🔹 Sidebar */
-    .sidebar {
-        background: white;
-        border-right: 1px solid #ddd;
-        height: 100vh;
-        padding: 20px 10px;
-        position: sticky;
-        top: 0;
-    }
-    .sidebar a {
-        display: block;
-        padding: 10px 15px;
-        margin-bottom: 8px;
-        color: #333;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    .sidebar a:hover {
-        background: #f0f0f0;
-        color: #b92b27;
-    }
-
-    /* 🔹 Feed Cards */
-    .feed-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-    .feed-card h5 {
-        font-weight: bold;
-    }
-    .feed-card small {
-        color: #666;
-    }
-
-    /* 🔹 Right panel */
-    .right-panel {
-        background: white;
-        border-left: 1px solid #ddd;
-        padding: 20px;
-        position: sticky;
-        top: 0;
-        height: 100vh;
-    }
-</style>
-
-<!-- 🔹 Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-custom px-3">
-    <a class="navbar-brand" href="#">CampusConnect</a>
-    <div class="ms-auto d-flex">
-        <form method="post" action="/Account/Logout">
-            <button type="submit" class="btn btn-danger rounded-pill">Logout</button>
-        </form>
-    </div>
-</nav>
-
-<div class="container-fluid">
-    <div class="row">
-        <!-- 🔹 Sidebar -->
-        <div class="col-md-2 sidebar">
-            <a href="#">🏠 Home</a>
-            <a href="/Questions/Index">📚 Questions</a>
-            <a href="/Users/Index">👥 Users</a>
-            <a href="/Leaderboard/Index">🏆 Leaderboard</a>
-            <a href="/Announcements/Index">📰 Announcements</a>
-            <a href="/Account/Profile">⚙️ Profile</a>
+<div class="row">
+    <div class="col-md-9">
+        <div class="feed-card">
+            <h5>📢 Announcements</h5>
+            <ul class="list-group list-group-flush">
+                @foreach(var announcement in Model.Announcements)
+                {
+                    <li class="list-group-item">@announcement.Title</li>
+                }
+            </ul>
+            <a href="/Announcements/Index" class="btn btn-sm btn-outline-primary mt-3">More</a>
         </div>
 
-        <!-- 🔹 Main Feed -->
-        <div class="col-md-7 p-4">
-            <div class="feed-card">
-                <h5>Welcome, @User.Identity.Name 👋</h5>
-                <p class="text-muted">This is your personalized dashboard. Start exploring!</p>
-            </div>
+        <div class="feed-card">
+            <h5><i class="bi bi-graph-up"></i> Trending Questions</h5>
 
-            <div class="feed-card">
-                <h5>📢 New Announcement</h5>
-                <small>2 hours ago · Admin</small>
-                <p>Campus fest will be held on 20th September. Don’t forget to register!</p>
-            </div>
+            <form asp-controller="Home" asp-action="Index" method="get" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="tag" class="form-control" placeholder="Search by tag..." value="@ViewData["CurrentTag"]" />
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
 
-            <div class="feed-card">
-                <h5><i class="bi bi-graph-up"></i> Trending Questions</h5>
-                @foreach(var question in Model.TrendingQuestions)
-                {
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">@question.Title</h5>
-                            <p class="card-text"><small class="text-muted">Asked by @question.ApplicationUser.FullName on @question.CreatedAt.ToShortDateString()</small></p>
-                            <p class="card-text">@question.Content</p>
-                            <a href="/Questions/Details/@question.Id" class="btn btn-primary">Answer</a>
-                            <a href="#" class="btn btn-secondary">Follow</a>
-                        </div>
-                        <div class="card-footer text-muted">
-                            @question.Answers.Count Answers
+            @foreach(var question in Model.TrendingQuestions)
+            {
+                <div class="feed-card question-card mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="https://www.gravatar.com/avatar/@(System.Security.Cryptography.MD5.Create().ComputeHash(System.Text.Encoding.ASCII.GetBytes(question.ApplicationUser.Email.ToLower())).Select(b => b.ToString("x2")).Aggregate((a, b) => a + b))?d=identicon" alt="User Avatar" class="rounded-circle me-2" width="40" height="40">
+                        <div>
+                            <h6 class="mb-0">@question.ApplicationUser.FullName</h6>
+                            <small class="text-muted">Asked on @question.CreatedAt.ToShortDateString()</small>
                         </div>
                     </div>
-                }
-            </div>
-        </div>
-
-        <!-- 🔹 Right Panel -->
-        <div class="col-md-3 right-panel">
-            <h6 class="fw-bold">Suggested Users</h6>
-            <ul class="list-unstyled">
-@foreach(var user in Model.SuggestedUsers)
-{
-    <li class="mb-2">👤 @user.FullName </li>
-}
-</ul>
-            <hr>
-            <h6 class="fw-bold">Upcoming Events</h6>
-            <p>📅 Hackathon – 25th Sept</p>
-            <p>📅 Workshop – 30th Sept</p>
+                    <h5 class="card-title"><a href="/Questions/Details/@question.Id" class="text-decoration-none text-dark">@question.Title</a></h5>
+                    <div class="mt-3">
+                        <a href="/Questions/Details/@question.Id" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square"></i> Answer</a>
+                    </div>
+                    <div class="card-footer text-muted mt-3">
+                        @question.Answers.Count Answers
+                    </div>
+                </div>
+            }
         </div>
     </div>
+
+    <div class="col-md-3 right-panel">
+        <h6 class="fw-bold">Suggested Users</h6>
+        <ul class="list-unstyled">
+            @foreach(var user in Model.SuggestedUsers)
+            {
+                <li class="mb-2">👤 @user.FullName </li>
+            }
+        </ul>
+        <hr>
+        <h6 class="fw-bold">Upcoming Events</h6>
+        <p>📅 Hackathon – 25th Sept</p>
+        <p>📅 Workshop – 30th Sept</p>
+    </div>
 </div>
+<!--
+Email: 24ceubs906@ddu.ac.in, Name: APOORVA, Password: apoorva@123
+Email: 23ceuoz057@ddu.ac.in, Name: DHRUV, Password: dhruv@123
+Email: 23ceuoz058@ddu.ac.in, Name: MADHAV, Password: madhav@123
+Email: 23ceuos059@ddu.ac.in, Name: ZEEL, Password: zeel@123
+Email: 23ceuoz060@ddu.ac.in, Name: MANAN, Password: manan@123
+Email: 23ceuos061@ddu.ac.in, Name: KISHAN, Password: kishan@123
+Email: 24ceuos907@ddu.ac.in, Name: RISHI, Password: rishi@123
+Email: 23ceubs063@ddu.ac.in, Name: SMITKUMAR, Password: smitkumar@123
+Email: 23ceuos064@ddu.ac.in, Name: MEET, Password: meet@123
+Email: 23ceuos065@ddu.ac.in, Name: RUDRA, Password: rudra@123
+Email: 23ituoz054@ddu.ac.in, Name: DARSHAN, Password: darshan@123
+Email: 23ceuos069@ddu.ac.in, Name: KISHAN, Password: kishan@123
+Email: 23ceuos070@ddu.ac.in, Name: OM, Password: om@123
+Email: 23ceuoz071@ddu.ac.in, Name: CHINTAN, Password: chintan@123
+Email: 23ceubs073@ddu.ac.in, Name: KARAN, Password: karan@123
+Email: 23ceuos075@ddu.ac.in, Name: RUT, Password: rut@123
+Email: 23ceuos079@ddu.ac.in, Name: YUGKUMAR, Password: yugkumar@123
+Email: 24ceucs908@ddu.ac.in, Name: CHIRAG, Password: chirag@123
+Email: 23ceuos088@ddu.ac.in, Name: SHIVAM, Password: shivam@123
+Email: 24ceuof910@ddu.ac.in, Name: MOHAMMADHASAN, Password: mohammadhasan@123
+Email: 24ceuos911@ddu.ac.in, Name: AMAN, Password: aman@123
+Email: 23ceuos168@ddu.ac.in, Name: TILAK, Password: tilak@123
+Email: 23ceuoz090@ddu.ac.in, Name: RAJ, Password: raj@123
+Email: 23ceuoz091@ddu.ac.in, Name: NISHADH, Password: nishadh@123
+Email: 23ceuos096@ddu.ac.in, Name: HIRAV, Password: hirav@123
+Email: 23ceuos098@ddu.ac.in, Name: MANTHAN, Password: manthan@123
+Email: 23ceubs099@ddu.ac.in, Name: RAXESH, Password: raxesh@123
+Email: 23ceuoz101@ddu.ac.in, Name: ADITYA, Password: aditya@123
+Email: 23ceuos102@ddu.ac.in, Name: AKSH, Password: aksh@123
+Email: 23ceuoz110@ddu.ac.in, Name: KRISH, Password: krish@123
+Email: 23ceuos112@ddu.ac.in, Name: KUNJAN, Password: kunjan@123
+Email: 23ceuoz113@ddu.ac.in, Name: MAITREY, Password: maitrey@123
+Email: 22ceuos011@ddu.ac.in, Name: NEEL, Password: neel@123
+Email: 23ceuxs115@ddu.ac.in, Name: OM, Password: om@123
+Email: 23ceuoz118@ddu.ac.in, Name: RUTUL, Password: rutul@123
+Email: 23ceuoz119@ddu.ac.in, Name: SHREYAS, Password: shreyas@123
+Email: 23ceuos120@ddu.ac.in, Name: SHREYASKUMAR, Password: shreyaskumar@123
+Email: 23ceuos121@ddu.ac.in, Name: TAKSH, Password: taksh@123
+Email: 23ceuts122@ddu.ac.in, Name: TARANG, Password: tarang@123
+Email: 23ceuoz123@ddu.ac.in, Name: VRUNDKUMAR, Password: vrundkumar@123
+Email: 23ceuos129@ddu.ac.in, Name: ROMIL, Password: romil@123
+Email: 23ceuos130@ddu.ac.in, Name: NIMIT, Password: nimit@123
+Email: 23ceubs133@ddu.ac.in, Name: DEEP, Password: deep@123
+Email: 23ceucs134@ddu.ac.in, Name: RONAK, Password: ronak@123
+Email: 23ceuoz137@ddu.ac.in, Name: YASH, Password: yash@123
+Email: 23ceuoz139@ddu.ac.in, Name: YASH, Password: yash@123
+Email: 23ceuos140@ddu.ac.in, Name: BANSAL, Password: bansal@123
+Email: 23ceuos141@ddu.ac.in, Name: PRANJALKUMAR, Password: pranjalkumar@123
+Email: 24ceuos914@ddu.ac.in, Name: DHYEY, Password: dhyey@123
+Email: 23ituoz121@ddu.ac.in, Name: JAL, Password: jal@123
+Email: 23ceuoz142@ddu.ac.in, Name: MRUDUL, Password: mrudul@123
+Email: 23ceuoz144@ddu.ac.in, Name: HET, Password: het@123
+Email: 23ceuos146@ddu.ac.in, Name: HET, Password: het@123
+Email: 23ceuos147@ddu.ac.in, Name: HENIL, Password: henil@123
+Email: 23ceuoz148@ddu.ac.in, Name: RUDRA, Password: rudra@123
+Email: 23ceuoz149@ddu.ac.in, Name: VISHV, Password: vishv@123
+Email: 23ceuos153@ddu.ac.in, Name: MANKUMAR, Password: mankumar@123
+Email: 23ceuos155@ddu.ac.in, Name: SHUBHAM, Password: shubham@123
+Email: 23ceuoz156@ddu.ac.in, Name: MOHAMMADATIK, Password: mohammadatik@123
+Email: 23ceuos157@ddu.ac.in, Name: DEEP, Password: deep@123
+Email: 23ceubs158@ddu.ac.in, Name: SHUBHAM, Password: shubham@123
+Email: 23ceuos159@ddu.ac.in, Name: SHIVRAJSINH, Password: shivrajsinh@123
+Email: 23ceubs161@ddu.ac.in, Name: PARTH, Password: parth@123
+Email: 23ceuof166@ddu.ac.in, Name: KUNJAL, Password: kunjal@123
+Email: 23ceucs167@ddu.ac.in, Name: PRASHANT, Password: prashant@123
+Email: 22ceuts062@ddu.ac.in, Name: NRUSHANSH, Password: nrushansh@123
+Email: 22ceuos148@ddu.ac.in, Name: OJAS, Password: ojas@123
+-->

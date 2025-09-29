@@ -13,5 +13,7 @@ namespace CampusConnect.ViewModels
     {
         public List<ApplicationUser> SuggestedUsers { get; set; } = new();
         public List<Question> TrendingQuestions { get; set; } = new();
+        public List<Announcement> Announcements { get; set; } = new();
+        public ApplicationUser CurrentUser { get; set; }
     }
 }

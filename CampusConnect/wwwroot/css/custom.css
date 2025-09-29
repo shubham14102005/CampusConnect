@@ -1,0 +1,58 @@
+/* Custom CSS for CampusConnect */
+
+:root {
+    --primary-color: #b92b27;
+    --secondary-color: #1565c0;
+    --light-gray: #f9f9f9;
+    --dark-gray: #333;
+}
+
+body {
+    background-color: var(--light-gray);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.navbar-custom {
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.nav-link {
+    color: #555 !important;
+    margin-right: 20px;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+.feed-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.feed-card h5 {
+    font-weight: bold;
+}
+
+.feed-card small {
+    color: #666;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #a32622;
+    border-color: #a32622;
+}

@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace CampusConnect.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IQuestionRepository _questionRepository;
         private readonly IAnswerRepository _answerRepository;
+        private readonly IUserRepository _userRepository;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IQuestionRepository questionRepository, IAnswerRepository answerRepository)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IQuestionRepository questionRepository, IAnswerRepository answerRepository, IUserRepository userRepository) : base(userManager)
         {
-            _userManager = userManager;
             _signInManager = signInManager;
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IActionResult> Profile()
@@ -30,6 +30,10 @@ namespace CampusConnect.Controllers
             {
                 return Challenge();
             }
+
+            var user = await _userRepository.GetUserById(userId);
+            if (user == null) return NotFound();
+
             var questions = await _questionRepository.GetQuestionsByUser(userId);
             var answers = await _answerRepository.GetAnswersByUser(userId);
 
@@ -38,7 +42,8 @@ namespace CampusConnect.Controllers
                 QuestionCount = questions.Count(),
                 AnswerCount = answers.Count(),
                 RecentQuestions = questions,
-                RecentAnswers = answers
+                RecentAnswers = answers,
+                Reputation = user.Reputation
             };
 
             return View(model);

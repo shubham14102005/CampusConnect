@@ -1,7 +1,7 @@
-@model CampusConnect.ViewModels.ProfileViewModel
+@model CampusConnect.ViewModels.UserProfileViewModel
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "User Profile";
 }
 
 <div class="container mt-5">
@@ -10,9 +10,8 @@
             <div class="card shadow-sm">
                 <div class="card-body text-center">
                     <img src="https://st3.depositphotos.com/6672868/13701/v/450/depositphotos_137014128-stock-illustration-user-profile-icon.jpg" alt="User profile picture" class="img-fluid rounded-circle mb-3" width="150">
-                    <h3>@User.Identity.Name</h3>
-                    <p class="text-muted">Reputation: @Model.Reputation</p>
-                    <a asp-action="Edit" class="btn btn-primary btn-sm">Edit Profile</a>
+                    <h3>@Model.User.FullName</h3>
+
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-@model IEnumerable<CampusConnect.Models.ApplicationUser>
+@model IEnumerable<CampusConnect.ViewModels.UserViewModel>
 
 @{
     ViewData["Title"] = "Users";
@@ -25,11 +25,12 @@
         <thead class="thead-dark">
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.FullName)
+                    @Html.DisplayNameFor(model => model.User.FullName)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Email)
+                    @Html.DisplayNameFor(model => model.User.Email)
                 </th>
+                <th>Roles</th>
                 <th></th>
             </tr>
         </thead>
@@ -38,13 +39,22 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.FullName)
+                        @Html.DisplayFor(modelItem => item.User.FullName)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Email)
+                        @Html.DisplayFor(modelItem => item.User.Email)
                     </td>
                     <td>
-                        <a asp-controller="Account" asp-action="Profile" asp-route-id="@item.Id" class="btn btn-sm btn-info">View Profile</a>
+                        @string.Join(", ", item.Roles)
+                    </td>
+                    <td>
+                        <a asp-controller="Users" asp-action="UserProfile" asp-route-id="@item.User.Id" class="btn btn-sm btn-info">View Profile</a>
+                        @if (User.IsInRole("Faculty") && (item.Roles.Contains("Student") || !item.Roles.Any()))
+                        {
+                            <form asp-controller="Users" asp-action="DeleteUser" method="post" asp-route-userId="@item.User.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to anonymize this user account? This action cannot be undone.');">Anonymize User</button>
+                            </form>
+                        }
                     </td>
                 </tr>
             }

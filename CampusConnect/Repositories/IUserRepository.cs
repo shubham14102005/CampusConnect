@@ -8,5 +8,6 @@ namespace CampusConnect.Repositories
     public interface IUserRepository
     {
         Task<IEnumerable<ApplicationUser>> GetAllUsers();
+        Task<ApplicationUser> GetUserById(string userId);
     }
 }
