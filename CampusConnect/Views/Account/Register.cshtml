@@ -1,30 +1,42 @@
 @{
     ViewData["Title"] = "Register";
+    ViewData["ShowSidebar"] = false;
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
     body {
-        background: url('https://images.unsplash.com/photo-1521790362130-1e5a2c2f5d42?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+        background: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
         background-size: cover;
         height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
+    
     .overlay {
-        position: absolute;
-        top:0; left:0; right:0; bottom:0;
-        background: rgba(0,0,0,0.6);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 1;
     }
-    .register-card {
-        backdrop-filter: blur(10px);
-        background: rgba(255,255,255,0.15);
+    
+    .auth-card {
+        backdrop-filter: blur(15px);
+        background: rgba(255, 255, 255, 0.12);
         border-radius: 20px;
         padding: 40px;
         color: white;
-        width: 400px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        width: 420px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         transition: transform 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .register-card:hover {
+    
+    .auth-card:hover {
         transform: translateY(-5px);
     }
     .btn-gradient {
@@ -33,13 +45,29 @@
         color: white;
         font-weight: bold;
         transition: 0.3s;
+        padding: 12px;
     }
     .btn-gradient:hover {
         opacity: 0.85;
+        color: white;
+    }
+    .form-control {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+    }
+    .form-control::placeholder {
+        color: rgba(255,255,255,0.7);
     }
     .form-control:focus {
         box-shadow: none;
         border-color: #ff416c;
+        background: rgba(255,255,255,0.15);
+        color: white;
+    }
+    .form-label {
+        color: white;
+        font-weight: 500;
     }
     .toggle-password {
         cursor: pointer;
@@ -48,24 +76,33 @@
         top: 50%;
         transform: translateY(-50%);
         color: white;
+        z-index: 10;
+    }
+    .auth-links a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-links a:hover {
+        color: #ff416c;
+        text-decoration: underline;
     }
 </style>
 
 <div class="overlay"></div>
 
-<div class="d-flex justify-content-center align-items-center" style="height:100vh; position: relative; z-index:1;">
-    <div class="register-card position-relative">
-        <h2 class="text-center mb-4">Register</h2>
-        <div asp-validation-summary="All" class="text-danger"></div>
+<div class="d-flex justify-content-center align-items-center" style="height:100vh; position: relative; z-index: 2;">
+    <div class="auth-card position-relative">
+        <h2 class="text-center mb-4">Student Registration</h2>
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
         <form method="post" action="/Account/Register" class="position-relative">
             <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
+                <label for="fullName" class="form-label">Full Name</label>
                 <input type="text" class="form-control rounded-pill" id="fullName" name="fullName" placeholder="Enter your full name">
-
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Enter your email">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="name@ddu.ac.in">
             </div>
             <div class="mb-3 position-relative">
                 <label for="password" class="form-label">Password</label>
@@ -74,9 +111,13 @@
             </div>
             <button type="submit" class="btn btn-gradient w-100 rounded-pill">Register</button>
         </form>
-        <div class="text-center mt-3">
+        
+        <div class="text-center mt-4 auth-links">
             <span>Already have an account? </span>
-            <a href="/Account/Login" class="text-white fw-bold text-decoration-underline">Login</a>
+            <a href="/Account/Login">Login</a>
+            <br>
+            <span class="mt-2 d-block">Faculty? </span>
+            <a href="/Account/RegisterFaculty">Register as Faculty</a>
         </div>
     </div>
 </div>

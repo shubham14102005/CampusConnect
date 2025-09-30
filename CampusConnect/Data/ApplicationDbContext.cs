@@ -37,7 +37,23 @@ namespace CampusConnect.Data
                 .WithMany(t => t.QuestionTags)
                 .HasForeignKey(qt => qt.TagId);
 
+            // ---------------------------
+            // Fix multiple cascade paths
+            // ---------------------------
 
+            // Question → Answers (allow cascade delete)
+            builder.Entity<Answer>()
+                .HasOne(a => a.Question)
+                .WithMany(q => q.Answers)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User → Answers (restrict delete to prevent multiple cascade paths)
+            builder.Entity<Answer>()
+                .HasOne(a => a.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(a => a.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

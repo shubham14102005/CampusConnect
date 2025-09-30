@@ -13,6 +13,9 @@ namespace CampusConnect.Models
         [Required]
         public string Title { get; set; } = string.Empty;
 
+        [Required]
+        public string Content { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
 
         public bool HasAcceptedAnswer { get; set; } = false;

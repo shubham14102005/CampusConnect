@@ -48,7 +48,12 @@ namespace CampusConnect.Controllers
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (userId == null) return Challenge();
-                var question = new Question { Title = model.Title, CreatedAt = DateTime.UtcNow, ApplicationUserId = userId };
+                var question = new Question { 
+                    Title = model.Title, 
+                    Content = model.Content,
+                    CreatedAt = DateTime.UtcNow, 
+                    ApplicationUserId = userId 
+                };
                 _questionRepository.CreateQuestionWithTags(question, model.Tags);
 
 
@@ -74,7 +79,12 @@ namespace CampusConnect.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (question.ApplicationUserId != currentUserId) return Forbid();
             var tagsString = string.Join(", ", question.QuestionTags.Select(qt => qt.Tag.Name));
-            var viewModel = new EditQuestionViewModel { Id = question.Id, Title = question.Title, Tags = tagsString };
+            var viewModel = new EditQuestionViewModel { 
+                Id = question.Id, 
+                Title = question.Title, 
+                Content = question.Content,
+                Tags = tagsString 
+            };
             return View(viewModel);
         }
 
@@ -91,6 +101,7 @@ namespace CampusConnect.Controllers
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (originalQuestion.ApplicationUserId != currentUserId) return Forbid();
                 originalQuestion.Title = model.Title;
+                originalQuestion.Content = model.Content;
                 _questionRepository.Update(originalQuestion, model.Tags);
                 return RedirectToAction("Details", new { id = model.Id });
             }

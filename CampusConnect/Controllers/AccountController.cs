@@ -165,7 +165,7 @@ namespace CampusConnect.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "Student");
                 await _signInManager.SignInAsync(user, isPersistent: true);
-                return RedirectToAction("Login", "Account"); // Redirect after successful registration
+                return RedirectToAction("Dashboard", "Home"); // Redirect to dashboard after successful registration
             }
 
             foreach (var error in result.Errors)
@@ -225,7 +225,7 @@ namespace CampusConnect.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "Faculty");
                 await _signInManager.SignInAsync(user, isPersistent: true);
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Dashboard", "Home");
             }
 
             foreach (var error in result.Errors)

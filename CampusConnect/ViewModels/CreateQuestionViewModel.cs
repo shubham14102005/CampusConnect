@@ -10,6 +10,10 @@ namespace CampusConnect.ViewModels // This namespace must be correct
         [StringLength(200, MinimumLength = 10)]
         public string Title { get; set; } = string.Empty;
 
+        [Required]
+        [StringLength(5000, MinimumLength = 20)]
+        [Display(Name = "Question Content")]
+        public string Content { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Tags (comma-separated)")]

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,85 +10,138 @@
     <link rel="stylesheet" href="~/CampusConnect.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        /* 🔹 Base Layout Fix */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
         body {
             background: #f9f9f9;
             font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        /* 🔹 Top Navbar */
+
+        /* 🔹 Top Navbar - Fixed Height */
         .navbar-custom {
             background: white;
             border-bottom: 1px solid #dee2e6;
+            height: 60px;
+            min-height: 60px;
+            padding: 0.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            flex-shrink: 0;
         }
+        
         .navbar-brand {
             font-weight: bold;
             color: #d9534f;
+            margin-right: 2rem;
         }
+        
         .nav-link {
             color: #333 !important;
             margin-right: 20px;
+            padding: 0.5rem 1rem;
         }
+        
         .nav-link:hover {
             color: #d9534f !important;
         }
 
-        /* 🔹 Sidebar */
+        /* 🔹 Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            margin-top: 0;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* 🔹 Sidebar - Fixed Width */
         .sidebar {
             background: #f8f9fa;
             border-right: 1px solid #dee2e6;
-            height: 100vh;
+            width: 250px;
+            min-width: 250px;
             padding: 20px 10px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
             position: sticky;
-            top: 0;
+            top: 60px;
+            flex-shrink: 0;
         }
+        
         .sidebar a {
             display: block;
-            padding: 10px 15px;
+            padding: 12px 15px;
             margin-bottom: 8px;
             color: #343a40;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 500;
+            transition: all 0.2s ease;
         }
+        
         .sidebar a:hover {
             background: #e9ecef;
             color: #d9534f;
+            transform: translateX(5px);
         }
 
-        /* 🔹 Feed Cards */
-        .feed-card {
-            background: white;
-            border-radius: 12px;
+        /* 🔹 Main Content Area */
+        .main-content {
+            flex: 1;
             padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            min-height: calc(100vh - 120px);
         }
-        .feed-card h5 {
-            font-weight: bold;
-        }
-        .feed-card small {
-            color: #666;
-        }
-
-        .question-card .card-title a {
-            font-weight: 600;
-            font-size: 1.1rem;
+        
+        .main-content.no-sidebar {
+            width: 100%;
+            max-width: 100%;
         }
 
-        .question-card .card-footer {
-            background: none;
-            border-top: none;
-            padding-left: 0;
-            padding-bottom: 0;
-        }
-
-        /* 🔹 Right panel */
-        .right-panel {
+        /* 🔹 Footer - Fixed Height */
+        .footer {
             background: white;
-            border-left: 1px solid #ddd;
-            padding: 20px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
+            border-top: 1px solid #dee2e6;
+            padding: 20px 0;
+            margin-top: auto;
+            flex-shrink: 0;
+            height: 60px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 🔹 Responsive Design */
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                min-height: auto;
+                padding: 15px;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -112,29 +165,25 @@
         </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            @if (ViewData["ShowSidebar"] as bool? ?? true)
-            {
-                <div class="col-md-2 sidebar">
-                    <a href="/Home/Index">🏠 Home</a>
-                    <a href="/Questions/Index">📚 Questions</a>
-                    <a href="/Users/Index">👥 Users</a>
-                    <a href="/Leaderboard/Index">🏆 Leaderboard</a>
-                    <a href="/Announcements/Index">📰 Announcements</a>
-                    <a href="/Account/Profile">⚙️ Profile</a>
-                </div>
-            }
-            <div class="col-md-10">
-                <main role="main" class="pb-3">
-                    @RenderBody()
-                </main>
+    <div class="main-container">
+        @if (ViewData["ShowSidebar"] as bool? ?? true)
+        {
+            <div class="sidebar">
+                <a href="/Home/Index">🏠 Home</a>
+                <a href="/Questions/Index">📚 Questions</a>
+                <a href="/Users/Index">👥 Users</a>
+                <a href="/Leaderboard/Index">🏆 Leaderboard</a>
+                <a href="/Announcements/Index">📰 Announcements</a>
+                <a href="/Account/Profile">⚙️ Profile</a>
             </div>
+        }
+        <div class="main-content @(ViewData["ShowSidebar"] as bool? ?? true ? "" : "no-sidebar")">
+            @RenderBody()
         </div>
     </div>
 
-    <footer class="border-top footer text-muted mt-5">
-        <div class="container text-center py-3">
+    <footer class="footer text-muted">
+        <div class="container text-center">
             &copy; @DateTime.Now.Year - CampusConnect |
             <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>

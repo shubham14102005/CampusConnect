@@ -88,9 +88,8 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedRolesAndAdminAsync(roleManager);
 
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-
-
+    // Ensure database is created
+    await context.Database.EnsureCreatedAsync();
 }
 
 // 7️⃣ Run app
