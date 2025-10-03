@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CampusConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250927134806_AddIsUpvoteToAnswerVote")]
-    partial class AddIsUpvoteToAnswerVote
+    [Migration("20250930201509_AddContentToQuestion")]
+    partial class AddContentToQuestion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,30 @@ namespace CampusConnect.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CampusConnect.Models.Announcement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Announcements");
+                });
 
             modelBuilder.Entity("CampusConnect.Models.Answer", b =>
                 {
@@ -37,6 +61,9 @@ namespace CampusConnect.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ApplicationUserId1")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -47,6 +74,9 @@ namespace CampusConnect.Migrations
                     b.Property<int>("DownvoteCount")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsBestAnswer")
+                        .HasColumnType("bit");
+
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
@@ -56,6 +86,8 @@ namespace CampusConnect.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("ApplicationUserId1");
 
                     b.HasIndex("QuestionId");
 
@@ -77,7 +109,7 @@ namespace CampusConnect.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<bool>("IsUpvote")
+                    b.Property<bool>("IsUpVote")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
@@ -138,6 +170,9 @@ namespace CampusConnect.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Reputation")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -179,6 +214,9 @@ namespace CampusConnect.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("HasAcceptedAnswer")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -359,10 +397,14 @@ namespace CampusConnect.Migrations
             modelBuilder.Entity("CampusConnect.Models.Answer", b =>
                 {
                     b.HasOne("CampusConnect.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany("Answers")
+                        .WithMany()
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("CampusConnect.Models.ApplicationUser", null)
+                        .WithMany("Answers")
+                        .HasForeignKey("ApplicationUserId1");
 
                     b.HasOne("CampusConnect.Models.Question", "Question")
                         .WithMany("Answers")
@@ -386,7 +428,7 @@ namespace CampusConnect.Migrations
                     b.HasOne("CampusConnect.Models.ApplicationUser", "ApplicationUser")
                         .WithMany("AnswerVotes")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Answer");
@@ -399,7 +441,7 @@ namespace CampusConnect.Migrations
                     b.HasOne("CampusConnect.Models.ApplicationUser", "ApplicationUser")
                         .WithMany("Questions")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");

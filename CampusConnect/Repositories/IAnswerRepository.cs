@@ -10,7 +10,9 @@ namespace CampusConnect.Repositories
         Answer? GetById(int id);
         void Update(Answer answer);
         void Delete(int id);
+        void MarkAsBest(Answer answer);
         Task<IEnumerable<Answer>> GetAnswersByQuestion(int questionId);
         Task<IEnumerable<Answer>> GetAnswersByUser(string userId);
+        Task CreateBulk(List<Answer> answers);
     }
 }

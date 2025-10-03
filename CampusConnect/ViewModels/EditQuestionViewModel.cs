@@ -11,7 +11,8 @@ namespace CampusConnect.ViewModels
         public string Title { get; set; } = string.Empty;
 
         [Required]
-        [MinLength(20)]
+        [StringLength(5000, MinimumLength = 20)]
+        [Display(Name = "Question Content")]
         public string Content { get; set; } = string.Empty;
 
         [Required]

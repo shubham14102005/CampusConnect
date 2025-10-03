@@ -5,24 +5,25 @@
 namespace CampusConnect.Migrations
 {
     /// <inheritdoc />
-    public partial class AddFunctioningTitleToUser : Migration
+    public partial class AddContentToQuestion : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "FunctioningTitle",
-                table: "AspNetUsers",
+                name: "Content",
+                table: "Questions",
                 type: "nvarchar(max)",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "FunctioningTitle",
-                table: "AspNetUsers");
+                name: "Content",
+                table: "Questions");
         }
     }
 }

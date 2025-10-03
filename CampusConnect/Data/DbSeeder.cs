@@ -1,4 +1,3 @@
-using CampusConnect.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
@@ -19,5 +18,7 @@ namespace CampusConnect.Data
                 await roleManager.CreateAsync(new IdentityRole("Faculty"));
             }
         }
+
+
     }
 }

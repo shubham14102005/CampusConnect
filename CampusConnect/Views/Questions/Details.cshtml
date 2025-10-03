@@ -25,7 +25,6 @@
             </div>
         }
 
-        <p class="card-text fs-5">@Model.Content</p>
 
         <div class="mt-4">
             @foreach (var questionTag in Model.QuestionTags)
@@ -51,14 +50,19 @@
 
             var upvoteClass = (currentUserVote != null && currentUserVote.IsUpVote) ? "btn-success" : "btn-outline-success";
             var downvoteClass = (currentUserVote != null && !currentUserVote.IsUpVote) ? "btn-danger" : "btn-outline-danger";
+            var bestAnswerClass = answer.IsBestAnswer ? "border-success" : "";
             // --- END LOGIC ---
 
-            <div class="card mb-3 shadow-sm">
+            <div class="card mb-3 shadow-sm @bestAnswerClass">
                 <div class="card-body">
+                    @if (answer.IsBestAnswer)
+                    {
+                        <div class="badge bg-success mb-2">Best Answer</div>
+                    }
                     <p>@answer.Content</p>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div class="d-flex align-items-center">
-                            <form asp-controller="Vote" asp-action="Submit" method="post" class="me-2">
+                            <form asp-controller="Vote" asp-action="Submit" method="post" class="me-2 vote-form">
                                 <input type="hidden" name="answerId" value="@answer.Id" />
                                 <input type="hidden" name="isUpvote" value="true" />
                                 <input type="hidden" name="questionId" value="@Model.Id" />
@@ -74,6 +78,13 @@
                                     <i class="bi bi-hand-thumbs-down"></i> Disagree (<span class="downvote-count">@disagrees</span>)
                                 </button>
                             </form>
+                            @if (Model.ApplicationUserId == currentUserId && !answer.IsBestAnswer)
+                            {
+                                <form asp-controller="Answer" asp-action="MarkAsBest" method="post" class="ms-2">
+                                    <input type="hidden" name="id" value="@answer.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Mark as Best</button>
+                                </form>
+                            }
                         </div>
                         <footer class="blockquote-footer mb-0 text-end">
                             Answered by @(answer.ApplicationUser?.UserName ?? "Unknown")

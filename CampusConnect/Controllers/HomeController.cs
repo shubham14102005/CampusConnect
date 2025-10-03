@@ -4,40 +4,58 @@ using CampusConnect.Models;
 using CampusConnect.ViewModels; 
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Security.Claims;
 
+
+using Microsoft.AspNetCore.Identity;
 
 namespace CampusConnect.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : base(userManager)
         {
             _context = context;
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string tag)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _context.Users.FindAsync(userId);
+
+            var trendingQuestions = _context.Questions
+                                            .Include(q => q.ApplicationUser)
+                                            .Include(q => q.Answers)
+                                            .AsQueryable();
+
+            if (!string.IsNullOrEmpty(tag))
+            {
+                trendingQuestions = trendingQuestions.Where(q => q.QuestionTags.Any(qt => qt.Tag.Name == tag));
+            }
+
             var model = new DashboardViewModel
             {
-                // Suggested users (top 5 by FullName as example)
+                CurrentUser = currentUser,
                 SuggestedUsers = _context.Users
                                          .OrderBy(u => u.FullName)
                                          .Take(5)
                                          .ToList(),
 
-                // Trending questions (top 5 latest questions)
-                TrendingQuestions = _context.Questions
-                                            .Include(q => q.ApplicationUser)
-                                            .Include(q => q.Answers)
-                                            .OrderByDescending(q => q.CreatedAt) // adjust field as needed
+                TrendingQuestions = trendingQuestions
+                                            .OrderByDescending(q => q.CreatedAt)
                                             .Take(5)
-                                            .ToList()
+                                            .ToList(),
+
+                Announcements = _context.Announcements
+                                          .OrderByDescending(a => a.CreatedAt)
+                                          .Take(4)
+                                          .ToList()
             };
 
-            // Return the Dashboard view in Home folder
+            ViewData["CurrentTag"] = tag;
             return View("Dashboard", model);
         }
     }

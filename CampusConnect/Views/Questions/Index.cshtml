@@ -12,11 +12,25 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <form asp-controller="Questions" asp-action="Index" method="get">
-            <div class="input-group">
-                <input type="text" name="searchTerm" class="form-control" placeholder="Search by keyword or tag..." value="@ViewData["CurrentSearch"]" />
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-search"></i> Search
-                </button>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by keyword..." value="@ViewData["CurrentSearch"]" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="tag" class="form-control" placeholder="Tag..." value="@ViewData["CurrentTag"]" />
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="answered" selected="@((string)ViewData["CurrentStatus"] == "answered")">Answered</option>
+                        <option value="unanswered" selected="@((string)ViewData["CurrentStatus"] == "unanswered")">Unanswered</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
             </div>
         </form>
     </div>

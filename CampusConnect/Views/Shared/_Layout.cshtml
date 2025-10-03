@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,61 +6,184 @@
     <title>@ViewData["Title"] - CampusConnect</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CampusConnect.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* 🔹 Base Layout Fix */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        body {
+            background: #f9f9f9;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* 🔹 Top Navbar - Fixed Height */
+        .navbar-custom {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            height: 60px;
+            min-height: 60px;
+            padding: 0.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            flex-shrink: 0;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: #d9534f;
+            margin-right: 2rem;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            margin-right: 20px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-link:hover {
+            color: #d9534f !important;
+        }
+
+        /* 🔹 Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            margin-top: 0;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* 🔹 Sidebar - Fixed Width */
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            width: 250px;
+            min-width: 250px;
+            padding: 20px 10px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            color: #343a40;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar a:hover {
+            background: #e9ecef;
+            color: #d9534f;
+            transform: translateX(5px);
+        }
+
+        /* 🔹 Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .main-content.no-sidebar {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* 🔹 Footer - Fixed Height */
+        .footer {
+            background: white;
+            border-top: 1px solid #dee2e6;
+            padding: 20px 0;
+            margin-top: auto;
+            flex-shrink: 0;
+            height: 60px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 🔹 Responsive Design */
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                min-height: auto;
+                padding: 15px;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">CampusConnect</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    <nav class="navbar navbar-expand-lg navbar-custom px-3">
+        <a class="navbar-brand" href="#">CampusConnect</a>
+        @if (ViewData["CurrentUser"] is ApplicationUser currentUser && currentUser != null)
+        {
+            <span class="navbar-text ms-3">
+                Welcome, @currentUser.FullName 👋
+            </span>
+        }
+        else
+        {
+            <span class="navbar-text ms-3">User not found!</span>
+        }
+        <div class="ms-auto d-flex">
+            <form method="post" action="/Account/Logout">
+                <button type="submit" class="btn btn-danger rounded-pill">Logout</button>
+            </form>
+        </div>
+    </nav>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" &&
-                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
-                               asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
-                               asp-area="" asp-controller="Questions" asp-action="Index">Questions</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" &&
-                                                                                             ViewContext.RouteData.Values["Controller"]?.ToString() == "Questions" ? "active" : "")"
-                               asp-area="" asp-controller="Questions" asp-action="Create">Ask Question</a>
-                        </li>
-                                                }
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Privacy" ? "active" : "")"
-                               asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
-                        <partial name="_LoginPartial" />
-                    </ul>
-                </div>
+    <div class="main-container">
+        @if (ViewData["ShowSidebar"] as bool? ?? true)
+        {
+            <div class="sidebar">
+                <a href="/Home/Index">🏠 Home</a>
+                <a href="/Questions/Index">📚 Questions</a>
+                <a href="/Users/Index">👥 Users</a>
+                <a href="/Leaderboard/Index">🏆 Leaderboard</a>
+                <a href="/Announcements/Index">📰 Announcements</a>
+                <a href="/Account/Profile">⚙️ Profile</a>
             </div>
-        </nav>
-    </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
+        }
+        <div class="main-content @(ViewData["ShowSidebar"] as bool? ?? true ? "" : "no-sidebar")">
             @RenderBody()
-        </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted mt-5">
-        <div class="container text-center py-3">
+    <footer class="footer text-muted">
+        <div class="container text-center">
             &copy; @DateTime.Now.Year - CampusConnect |
             <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>
@@ -68,6 +191,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

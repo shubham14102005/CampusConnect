@@ -14,6 +14,7 @@ namespace CampusConnect.Models
         public DateTime CreatedAt { get; set; }
         public int UpvoteCount { get; set; } = 0;
         public int DownvoteCount { get; set; } = 0;
+        public bool IsBestAnswer { get; set; } = false;
         public int QuestionId { get; set; }
         [ForeignKey("QuestionId")]
         public Question Question { get; set; } = null!;

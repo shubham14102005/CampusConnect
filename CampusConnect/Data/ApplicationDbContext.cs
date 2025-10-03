@@ -15,6 +15,7 @@ namespace CampusConnect.Data
         public DbSet<AnswerVote> AnswerVotes { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<QuestionTag> QuestionTags { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -36,33 +37,23 @@ namespace CampusConnect.Data
                 .WithMany(t => t.QuestionTags)
                 .HasForeignKey(qt => qt.TagId);
 
-            // Configure the relationship between Question and ApplicationUser
-            builder.Entity<Question>()
-                .HasOne(q => q.ApplicationUser)
-                .WithMany(u => u.Questions)
-                .HasForeignKey(q => q.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevents deleting a user if they have questions
+            // ---------------------------
+            // Fix multiple cascade paths
+            // ---------------------------
 
-            // Configure the relationship between Answer and ApplicationUser
+            // Question → Answers (allow cascade delete)
+            builder.Entity<Answer>()
+                .HasOne(a => a.Question)
+                .WithMany(q => q.Answers)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User → Answers (restrict delete to prevent multiple cascade paths)
             builder.Entity<Answer>()
                 .HasOne(a => a.ApplicationUser)
-                .WithMany(u => u.Answers)
+                .WithMany()
                 .HasForeignKey(a => a.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure the relationship between AnswerVote and ApplicationUser
-            builder.Entity<AnswerVote>()
-                .HasOne(v => v.ApplicationUser)
-                .WithMany(u => u.AnswerVotes)
-                .HasForeignKey(v => v.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure the relationship between AnswerVote and Answer
-            builder.Entity<AnswerVote>()
-                .HasOne(v => v.Answer)
-                .WithMany(a => a.AnswerVotes)
-                .HasForeignKey(v => v.AnswerId)
-                .OnDelete(DeleteBehavior.Cascade); // Deletes votes if the parent answer is deleted
         }
     }
 }

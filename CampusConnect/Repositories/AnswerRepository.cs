@@ -23,6 +23,7 @@ namespace CampusConnect.Repositories
         {
             return _context.Answers
                 .Include(a => a.ApplicationUser)
+                .Include(a => a.Question)
                 .FirstOrDefault(a => a.Id == id);
         }
 
@@ -57,6 +58,28 @@ namespace CampusConnect.Repositories
         public async Task<IEnumerable<Answer>> GetAnswersByUser(string userId)
         {
             return await _context.Answers.Where(a => a.ApplicationUserId == userId).OrderByDescending(a => a.CreatedAt).Take(5).ToListAsync();
+        }
+
+        public async Task CreateBulk(List<Answer> answers)
+        {
+            await _context.Answers.AddRangeAsync(answers);
+            await _context.SaveChangesAsync();
+        }
+
+        public void MarkAsBest(Answer answer)
+        {
+            var question = _context.Questions.Include(q => q.Answers).FirstOrDefault(q => q.Id == answer.QuestionId);
+            if (question == null) return;
+
+            foreach (var otherAnswer in question.Answers)
+            {
+                otherAnswer.IsBestAnswer = false;
+            }
+
+            answer.IsBestAnswer = true;
+            question.HasAcceptedAnswer = true;
+
+            _context.SaveChanges();
         }
     }
 }

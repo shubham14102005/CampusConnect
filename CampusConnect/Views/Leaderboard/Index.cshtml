@@ -1,0 +1,28 @@
+@model IEnumerable<CampusConnect.Models.ApplicationUser>
+
+@{ 
+    ViewData["Title"] = "Leaderboard";
+    int rank = 1;
+}
+
+<h1>Leaderboard</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>User</th>
+            <th>Reputation</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@(rank++)</td>
+                <td>@user.FullName</td>
+                <td>@user.Reputation</td>
+            </tr>
+        }
+    </tbody>
+</table>

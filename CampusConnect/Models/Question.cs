@@ -18,6 +18,8 @@ namespace CampusConnect.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public bool HasAcceptedAnswer { get; set; } = false;
+
         public string ApplicationUserId { get; set; } = null!;
         [ForeignKey("ApplicationUserId")]
         public ApplicationUser ApplicationUser { get; set; } = null!;

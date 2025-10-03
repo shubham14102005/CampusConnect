@@ -3,26 +3,46 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.SignalR;
+    using CampusConnect.Hubs;
     using System;
     using System.Security.Claims;
 
     namespace CampusConnect.Controllers
     {
         [Authorize]
-        public class AnswerController : Controller
-        {
-            private readonly IAnswerRepository _answerRepository;
-            private readonly UserManager<ApplicationUser> _userManager;
-
-            public AnswerController(IAnswerRepository answerRepository, UserManager<ApplicationUser> userManager)
+                public class AnswerController : BaseController
+                {
+                    private readonly IAnswerRepository _answerRepository;
+                    private readonly IQuestionRepository _questionRepository;
+                    private readonly IHubContext<NotificationHub> _hubContext;
+            
+                    public AnswerController(IAnswerRepository answerRepository, IQuestionRepository questionRepository, UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext) : base(userManager)
+                    {
+                        _answerRepository = answerRepository;
+                        _questionRepository = questionRepository;
+                        _hubContext = hubContext;
+                    }            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public IActionResult MarkAsBest(int id)
             {
-                _answerRepository = answerRepository;
-                _userManager = userManager;
+                var answer = _answerRepository.GetById(id);
+                if (answer == null) return NotFound();
+
+                var question = _questionRepository.GetById(answer.QuestionId);
+                if (question == null) return NotFound();
+
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (question.ApplicationUserId != currentUserId) return Forbid();
+
+                _answerRepository.MarkAsBest(answer);
+
+                return RedirectToAction("Details", "Questions", new { id = answer.QuestionId });
             }
 
             [HttpPost]
             [ValidateAntiForgeryToken]
-            public IActionResult Create(int questionId, string content)
+            public async Task<IActionResult> Create(int questionId, string content)
             {
                 if (string.IsNullOrWhiteSpace(content))
                 {
@@ -33,6 +53,15 @@
             if (userId == null) return Challenge();
                 var answer = new Answer { Content = content, CreatedAt = DateTime.UtcNow, QuestionId = questionId, ApplicationUserId = userId };
                 _answerRepository.CreateAnswer(answer);
+
+
+
+                var question = _questionRepository.GetById(questionId);
+                if (question != null)
+                {
+                    await _hubContext.Clients.User(question.ApplicationUserId).SendAsync("ReceiveNotification", $"Your question \"{question.Title}\" received a new answer: {answer.Content}");
+                }
+
                 return RedirectToAction("Details", "Questions", new { id = questionId });
             }
 

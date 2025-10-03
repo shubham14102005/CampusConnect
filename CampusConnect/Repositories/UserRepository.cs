@@ -20,5 +20,11 @@ namespace CampusConnect.Repositories
         {
             return await _context.Users.ToListAsync();
         }
+
+        public async Task<ApplicationUser> GetUserById(string userId)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
     }
 }
